@@ -5,26 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlowSpace</title>
     <link rel="stylesheet" href="style.css">
-</head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></head>
 <body>
-    <div class="main">
         <div class="nevbar">
             <div class="menu">
-                <a href="#main-home">Trang Chủ</a>
-                <a href="#"></a>
-            </div>
-            <div></div>
-            <div></div>
-            <div class="footer-menu">
-                <a href="#user">Người Dùng</a>
-                <a href="#seting">Cài Đặt</a>
+                <a href="#menu-home" onclick="openTab('tab-home')"><i class="bi bi-house-fill"></i></a>
+                <a href="#menu-kanban" onclick="openTab('tab-kanban')"><i class="bi bi-kanban"></i></a>
+                <a href="#menu-editor" onclick="openTab('tab-editor')"><i class="bi bi-journal-text"></i></a>
+                <a href="#menu-folder" onclick="openTab('tab-folder')"><i class="bi bi-folder-fill"></i></a>
+                <a href="#menu-user" onclick="openTab('tab-user')"><i class="bi bi-person-fill-gear"></i></a>
             </div>
         </div>
-    </div>
-    <div class="footer">
-    
-    </div>
+        <div class="main">
+            <section id="tab-home" class="tabcontent active">
+                <h1>Hello Home</h1>
+                <img src="https://randomwordgenerator.com/img/picture-generator/53e5d7474354ad14f1dc8460962e33791c3ad6e04e5074407c2e7bd09f49c4_640.jpg" alt="">
+            </section>
+            <section id="tab-kanban" class="tabcontent">
+                <h1>Hello Kanban</h1>
+                <img src="https://randomwordgenerator.com/img/picture-generator/54e7d4434856ae14f1dc8460962e33791c3ad6e04e507441722a72dc9f4ecd_640.jpg  " alt="">
+            </section>
+            <section id="tab-editor" class="tabcontent">
+                <h1>Hello Editor</h1>
+                <img src="https://randomwordgenerator.com/img/picture-generator/52e6d2464f50ae14f1dc8460962e33791c3ad6e04e507440742a7ad69549cd_640.jpg" alt="">
+            </section>
+            <section id="tab-folder" class="tabcontent">
+                <h1>Hello Folder</h1>
+                <img src="https://randomwordgenerator.com/img/picture-generator/57e1d54a4255b10ff3d8992cc12c30771037dbf85254794e722e7ed5904c_640.jpg" alt="">
+            </section>
+            <section id="tab-user" class="tabcontent">
+                <h1>Hello User</h1>
+                <img src="https://randomwordgenerator.com/img/picture-generator/57e2d1464d56a414f1dc8460962e33791c3ad6e04e50744172287cd19649c5_640.jpg" alt="">
+            </section>
+        </div>
     <script src="script.js"></script>
-</div>
 </body>
 </html>

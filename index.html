@@ -9,33 +9,63 @@
 <body>
         <div class="nevbar">
             <div class="menu">
-                <a href="#menu-home" onclick="openTab('tab-home')"><i class="bi bi-house-fill"></i></a>
-                <a href="#menu-kanban" onclick="openTab('tab-kanban')"><i class="bi bi-kanban"></i></a>
-                <a href="#menu-editor" onclick="openTab('tab-editor')"><i class="bi bi-journal-text"></i></a>
-                <a href="#menu-folder" onclick="openTab('tab-folder')"><i class="bi bi-folder-fill"></i></a>
-                <a href="#menu-user" onclick="openTab('tab-user')"><i class="bi bi-person-fill-gear"></i></a>
+                <a href="#menu-home" onclick="openTab('tab-home')" class="menuitem"><i class="bi bi-house-fill"></i></a>
+                <a href="#menu-kanban" onclick="openTab('tab-kanban')" class="menuitem"><i class="bi bi-kanban"></i></a>
+                <a href="#menu-editor" onclick="openTab('tab-editor')" class="menuitem"><i class="bi bi-journal-text"></i></a>
+                <a href="#menu-folder" onclick="openTab('tab-folder')" class="menuitem"><i class="bi bi-folder-fill"></i></a>
+                <a href="#menu-user" onclick="openTab('tab-user')" class="menuitem"><i class="bi bi-person-fill-gear"></i></a>
             </div>
         </div>
         <div class="main">
             <section id="tab-home" class="tabcontent active">
-                <h1>Hello Home</h1>
-                <img src="https://randomwordgenerator.com/img/picture-generator/53e5d7474354ad14f1dc8460962e33791c3ad6e04e5074407c2e7bd09f49c4_640.jpg" alt="">
+
             </section>
             <section id="tab-kanban" class="tabcontent">
-                <h1>Hello Kanban</h1>
-                <img src="https://randomwordgenerator.com/img/picture-generator/54e7d4434856ae14f1dc8460962e33791c3ad6e04e507441722a72dc9f4ecd_640.jpg  " alt="">
-            </section>
+    <div class="kanban-board">
+        
+        <div class="column" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="column-header" style="background: #ff5e57;">TO DO</div>
+            <div class="task-list" id="list-todo">
+                <div class="task" draggable="true" ondragstart="drag(event)" id="task1">
+                    Nghiên cứu đề tài
+                    <span class="delete-btn" onclick="deleteTask(this)">×</span>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addTask('list-todo')">+ Thêm việc</button>
+        </div>
+
+        <div class="column" id="doing" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="column-header" style="background: #ffa502;">DOING</div>
+            <div class="task-list" id="list-doing">
+                <div class="task" draggable="true" ondragstart="drag(event)" id="task2">
+                    Vẽ giao diện Figma
+                    <span class="delete-btn" onclick="deleteTask(this)">×</span>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addTask('list-doing')">+ Thêm việc</button>
+        </div>
+
+        <div class="column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="column-header" style="background: #2ed573;">DONE</div>
+            <div class="task-list" id="list-done">
+                <div class="task" draggable="true" ondragstart="drag(event)" id="task3">
+                    Nộp báo cáo tuần 1
+                    <span class="delete-btn" onclick="deleteTask(this)">×</span>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addTask('list-done')">+ Thêm việc</button>
+        </div>
+
+    </div>
+</section>
             <section id="tab-editor" class="tabcontent">
-                <h1>Hello Editor</h1>
-                <img src="https://randomwordgenerator.com/img/picture-generator/52e6d2464f50ae14f1dc8460962e33791c3ad6e04e507440742a7ad69549cd_640.jpg" alt="">
+
             </section>
             <section id="tab-folder" class="tabcontent">
-                <h1>Hello Folder</h1>
-                <img src="https://randomwordgenerator.com/img/picture-generator/57e1d54a4255b10ff3d8992cc12c30771037dbf85254794e722e7ed5904c_640.jpg" alt="">
+
             </section>
             <section id="tab-user" class="tabcontent">
-                <h1>Hello User</h1>
-                <img src="https://randomwordgenerator.com/img/picture-generator/57e2d1464d56a414f1dc8460962e33791c3ad6e04e50744172287cd19649c5_640.jpg" alt="">
+
             </section>
         </div>
     <script src="script.js"></script>

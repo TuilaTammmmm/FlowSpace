@@ -43,8 +43,94 @@ body {
     from {opacity: 0; transform: translateY(10px);}
     to {opacity: 1; transform: translateY(0);}
 }
+.menu a{
+  padding: 10px 10px;
+  border-radius: 50%;
+  justify-content: center;
+}
 .main{
     flex: 1;
-    
     overflow-y: auto;
+}
+.menuitem {
+    color: #888;
+    transition: 0.3s;
+}
+
+.menuitem:hover {
+    color: #000000;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+}
+.menuitem:active {
+    transform: scale(3); 
+    color: #00eeff;
+}
+/* Khung bao quanh bảng Kanban */
+.kanban-board {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    height: 100%;
+    align-items: flex-start; /* Để các cột không bị giãn dài bằng nhau */
+}
+
+/* Giao diện từng cột */
+.column {
+    flex: 1;
+    background: #dfe6e9;
+    border-radius: 8px;
+    padding: 10px;
+    min-width: 250px; /* Đảm bảo cột không bị bóp quá nhỏ */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.column-header {
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* Giao diện thẻ Task */
+.task {
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    cursor: grab; /* Con trỏ hình bàn tay */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task:active {
+    cursor: grabbing; /* Con trỏ nắm chặt khi kéo */
+}
+
+/* Nút thêm và xóa */
+.add-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: #555;
+    cursor: pointer;
+    border-top: 1px dashed #ccc;
+}
+.add-btn:hover {
+    background: #eee;
+    color: #000;
+}
+
+.delete-btn {
+    color: #ff5e57;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+}
+.delete-btn:hover {
+    color: red;
 }

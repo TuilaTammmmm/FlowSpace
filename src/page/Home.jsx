@@ -334,11 +334,12 @@ function Home() {
                 {proj.isMuted && (
                   <i className="bi bi-bell-slash-fill" style={{ fontSize: '10px', opacity: 0.8 }}></i>
                 )}
+                {/* Gear icon removed as requested, but keeping the space and functionality if needed via invisible trigger or hover */}
                 <div onClick={(e) => { 
                   e.stopPropagation(); 
                   setProjectAction(proj);
-                }} className="hover-scale">
-                  <i className="bi bi-gear-fill" style={{ fontSize: '10px', opacity: 0.6 }}></i>
+                }} className="hover-scale" style={{ width: '12px', height: '12px', cursor: 'pointer' }}>
+                  {/* Invisible area to trigger settings for now, or you can click the tab itself? */}
                 </div>
               </div>
             </div>

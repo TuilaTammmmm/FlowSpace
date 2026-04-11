@@ -388,11 +388,11 @@ function Home() {
                   <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: 'var(--primary)' }}>
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }}></span> Tổng
                   </span>
-                  <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: '#10B981' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span> Xong
-                  </span>
                   <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: '#F59E0B' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B', display: 'inline-block' }}></span> Chưa làm
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B', display: 'inline-block' }}></span> Đang làm
+                  </span>
+                  <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: '#10B981' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span> Đã xong
                   </span>
                 </div>
               </div>

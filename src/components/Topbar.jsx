@@ -10,7 +10,13 @@ function Topbar() {
   const [showNotif, setShowNotif]       = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [overdueNotifs, setOverdueNotifs] = useState([]);
-  const [readIds, setReadIds]           = useState(new Set()); // đã đọc
+  const [readIds, setReadIds]           = useState(new Set()); 
+
+  // Load persistent read notifications
+  useEffect(() => {
+    const saved = localStorage.getItem('flowspace_read_notifs');
+    if (saved) setReadIds(new Set(JSON.parse(saved)));
+  }, []);
 
   const notifRef = useRef(null);
   const userRef  = useRef(null);
@@ -38,8 +44,18 @@ function Topbar() {
 
   const unreadCount = overdueNotifs.filter(t => !readIds.has(t.id)).length;
 
-  const markRead = (id) => setReadIds(prev => new Set([...prev, id]));
-  const markAllRead = () => setReadIds(new Set(overdueNotifs.map(t => t.id)));
+  const markRead = (id) => {
+    const next = new Set([...readIds, id]);
+    setReadIds(next);
+    localStorage.setItem('flowspace_read_notifs', JSON.stringify([...next]));
+  };
+
+  const markAllRead = () => {
+    const next = new Set(overdueNotifs.map(t => t.id));
+    setReadIds(next);
+    localStorage.setItem('flowspace_read_notifs', JSON.stringify([...next]));
+  };
+
   const deleteNotif = (id) => setOverdueNotifs(prev => prev.filter(n => n.id !== id));
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '';
@@ -60,17 +76,8 @@ function Topbar() {
     <div className="d-flex justify-content-between align-items-center py-3 px-4 topbar-wrapper w-100"
       style={{ position: 'relative', zIndex: 200 }}>
 
-      {/* Search */}
-      <div style={{ width: '340px' }}>
-        <div className="input-group">
-          <span className="input-group-text bg-transparent border-0 text-muted ps-2">
-            <i className="bi bi-search"></i>
-          </span>
-          <input type="text" className="form-control bg-transparent border-0 shadow-none ps-1"
-            style={{ fontSize: '14px', color: 'var(--text-secondary)' }}
-            placeholder="Tìm kiếm dự án, nhiệm vụ..." />
-        </div>
-      </div>
+      {/* Left spacer (was Search) */}
+      <div style={{ width: '340px' }}></div>
 
       {/* Right group */}
       <div className="d-flex align-items-center gap-3">

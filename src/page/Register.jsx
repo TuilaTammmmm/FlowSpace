@@ -13,13 +13,6 @@ function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleGoogleLogin = async () => {
-    try {
-      await MOCK_API.signInWithGoogle();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -105,14 +98,6 @@ function Register() {
             {loading ? 'Đang tạo tài khoản...' : 'Đăng ký tham gia'}
           </button>
 
-          <button 
-            type="button"
-            onClick={handleGoogleLogin}
-            className="btn w-100 py-3 fw-bold rounded-3 mb-4 d-flex align-items-center justify-content-center gap-2"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-thin)', color: 'white', fontSize: '15px' }}
-          >
-            <i className="bi bi-google text-primary"></i> Đăng ký bằng Google
-          </button>
 
           <div className="text-center">
             <Link to="/login" className="text-decoration-none fw-bold" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>

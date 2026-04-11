@@ -25,13 +25,6 @@ const sb = {
         return { user: data, token: 'sb-jwt-' + data.id };
     },
 
-    signInWithGoogle: async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: window.location.origin }
-        });
-        if (error) throw error;
-    },
 
     updateUserProfile: async (userId, updateData) => {
         const { data, error } = await supabase.from('users').update(updateData).eq('id', userId).select().single();

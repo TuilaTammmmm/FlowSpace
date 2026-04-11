@@ -337,8 +337,8 @@ function Home() {
                 <div onClick={(e) => { 
                   e.stopPropagation(); 
                   setProjectAction(proj);
-                }} className="hover-scale">
-                  <i className="bi bi-gear-fill" style={{ fontSize: '10px', opacity: 0.6 }}></i>
+                }} className="hover-scale ms-1" style={{ cursor: 'pointer', opacity: 0.6 }}>
+                  <i className="bi bi-gear-fill" style={{ fontSize: '10px' }}></i>
                 </div>
               </div>
             </div>
@@ -459,8 +459,8 @@ function Home() {
                       labelStyle={{ color: 'var(--text-secondary)', fontWeight: 700, marginBottom: '4px' }}
                     />
                     <Area name="Tổng cộng" type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={3} fill="url(#gTotal)" dot={false} activeDot={{ r: 5, fill: 'var(--primary)', stroke: 'white', strokeWidth: 2 }} />
-                    <Area name="Đã xong" type="monotone" dataKey="done"  stroke="#10B981"        strokeWidth={3} fill="url(#gDone)"  dot={false} activeDot={{ r: 5, fill: '#10B981',        stroke: 'white', strokeWidth: 2 }} />
-                    <Area name="Đang làm" type="monotone" dataKey="pending" stroke="#F59E0B" strokeWidth={3} fill="url(#gPending)" dot={false} activeDot={{ r: 5, fill: '#F59E0B', stroke: 'white', strokeWidth: 2 }} />
+                    <Area name="Đã xong" type="monotone" dataKey="done"  stroke="var(--done-color)" strokeWidth={3} fill="url(#gDone)"  dot={false} activeDot={{ r: 5, fill: 'var(--done-color)', stroke: 'white', strokeWidth: 2 }} />
+                    <Area name="Đang làm" type="monotone" dataKey="pending" stroke="var(--inprogress-color)" strokeWidth={3} fill="url(#gPending)" dot={false} activeDot={{ r: 5, fill: 'var(--inprogress-color)', stroke: 'white', strokeWidth: 2 }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

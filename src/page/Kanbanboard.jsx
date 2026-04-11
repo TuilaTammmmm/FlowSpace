@@ -286,8 +286,8 @@ function Kanbanboard() {
                 <div onClick={(e) => { 
                   e.stopPropagation(); 
                   setProjectAction(proj);
-                }} className="hover-scale">
-                  <i className="bi bi-gear-fill" style={{ fontSize: '10px', opacity: 0.6 }}></i>
+                }} className="hover-scale ms-1" style={{ cursor: 'pointer', opacity: 0.6 }}>
+                  <i className="bi bi-gear-fill" style={{ fontSize: '10px' }}></i>
                 </div>
               </div>
             </div>

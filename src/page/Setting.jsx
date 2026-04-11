@@ -6,27 +6,48 @@ function Setting() {
   const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState('interface');
   const [accentColor, setAccentColor] = useState('#FF3D3D');
+  const [inprogressColor, setInprogressColor] = useState('#F59E0B');
+  const [doneColor, setDoneColor] = useState('#10B981');
 
   useEffect(() => {
-    // Restore accent color
-    const savedColor = localStorage.getItem('flowspace_color');
-    if (savedColor) {
-      setAccentColor(savedColor);
-      document.documentElement.style.setProperty('--primary', savedColor);
+    // Restore colors
+    const c1 = localStorage.getItem('flowspace_color');
+    const c2 = localStorage.getItem('flowspace_inprogress_color');
+    const c3 = localStorage.getItem('flowspace_done_color');
+    
+    if (c1) {
+      setAccentColor(c1);
+      document.documentElement.style.setProperty('--primary', c1);
+      const r = parseInt(c1.slice(1,3),16), g = parseInt(c1.slice(3,5),16), b = parseInt(c1.slice(5,7),16);
+      document.documentElement.style.setProperty('--primary-glow', `rgba(${r},${g},${b},0.4)`);
     }
-    // Force Dark Mode on mount
+    if (c2) {
+      setInprogressColor(c2);
+      document.documentElement.style.setProperty('--inprogress-color', c2);
+    }
+    if (c3) {
+      setDoneColor(c3);
+      document.documentElement.style.setProperty('--done-color', c3);
+    }
     document.body.classList.remove('light-mode');
   }, []);
 
-  const handleColorChange = (color) => {
-    setAccentColor(color);
-    localStorage.setItem('flowspace_color', color);
-    document.documentElement.style.setProperty('--primary', color);
-    // Update glow
-    const r = parseInt(color.slice(1, 3), 16);
-    const g = parseInt(color.slice(3, 5), 16);
-    const b = parseInt(color.slice(5, 7), 16);
-    document.documentElement.style.setProperty('--primary-glow', `rgba(${r},${g},${b},0.4)`);
+  const handleColorChange = (type, color) => {
+    if (type === 'primary') {
+      setAccentColor(color);
+      localStorage.setItem('flowspace_color', color);
+      document.documentElement.style.setProperty('--primary', color);
+      const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
+      document.documentElement.style.setProperty('--primary-glow', `rgba(${r},${g},${b},0.4)`);
+    } else if (type === 'inprogress') {
+      setInprogressColor(color);
+      localStorage.setItem('flowspace_inprogress_color', color);
+      document.documentElement.style.setProperty('--inprogress-color', color);
+    } else if (type === 'done') {
+      setDoneColor(color);
+      localStorage.setItem('flowspace_done_color', color);
+      document.documentElement.style.setProperty('--done-color', color);
+    }
   };
 
   const handleClearData = () => {
@@ -88,44 +109,63 @@ function Setting() {
 
           {/* ---- TAB GIAO DIỆN ---- */}
           {activeTab === 'interface' && (
-            <>
-              {/* Accent Color */}
-
-              {/* Accent Color */}
+            <div className="d-flex flex-column gap-5">
+              
+              {/* Primary Color */}
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-4">
                 <div>
-                  <h6 className="fw-bold text-white mb-1">Màu Chủ Đạo</h6>
-                  <p className="text-secondary small mb-0">Chọn tông màu yêu thích cho không gian làm việc.</p>
+                  <h6 className="fw-bold text-white mb-1">Màu Tổng quát (Chủ đạo)</h6>
+                  <p className="text-secondary small mb-0">Tông màu chính cho ứng dụng và biểu đồ tổng task.</p>
                 </div>
-                <div className="d-flex gap-3 align-items-center flex-wrap">
-                  {COLORS.map(({ hex }) => {
-                    const isSelected = accentColor === hex;
-                    return (
-                      <div
-                        key={hex}
-                        onClick={() => handleColorChange(hex)}
-                        title={hex}
-                        style={{
-                          width: isSelected ? '30px' : '22px',
-                          height: isSelected ? '30px' : '22px',
-                          backgroundColor: hex,
-                          borderRadius: '10px',
-                          cursor: 'pointer',
-                          border: isSelected ? '2px solid white' : '2px solid transparent',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                          boxShadow: isSelected ? `0 0 0 3px ${hex}55` : 'none',
-                        }}
-                      >
-                        {isSelected && <i className="bi bi-check-lg text-white" style={{ fontSize: '12px' }}></i>}
-                      </div>
-                    );
-                  })}
+                <div className="d-flex gap-2 align-items-center flex-wrap">
+                  {COLORS.map(({ hex }) => (
+                    <div key={hex} onClick={() => handleColorChange('primary', hex)}
+                      style={{
+                        width: accentColor === hex ? '28px' : '20px', height: accentColor === hex ? '28px' : '20px',
+                        backgroundColor: hex, borderRadius: '8px', cursor: 'pointer', border: accentColor === hex ? '2px solid white' : 'none', transition: 'all 0.2s'
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
-            </>
+
+              {/* In-Progress Color */}
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-4">
+                <div>
+                  <h6 className="fw-bold text-white mb-1">Màu Đang làm</h6>
+                  <p className="text-secondary small mb-0">Màu sắc cho các nhiệm vụ đang thực hiện.</p>
+                </div>
+                <div className="d-flex gap-2 align-items-center flex-wrap">
+                  {COLORS.map(({ hex }) => (
+                    <div key={hex} onClick={() => handleColorChange('inprogress', hex)}
+                      style={{
+                        width: inprogressColor === hex ? '28px' : '20px', height: inprogressColor === hex ? '28px' : '20px',
+                        backgroundColor: hex, borderRadius: '8px', cursor: 'pointer', border: inprogressColor === hex ? '2px solid white' : 'none', transition: 'all 0.2s'
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Done Color */}
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-4">
+                <div>
+                  <h6 className="fw-bold text-white mb-1">Màu Đã xong</h6>
+                  <p className="text-secondary small mb-0">Màu sắc đánh dấu hoàn thành nhiệm vụ.</p>
+                </div>
+                <div className="d-flex gap-2 align-items-center flex-wrap">
+                  {COLORS.map(({ hex }) => (
+                    <div key={hex} onClick={() => handleColorChange('done', hex)}
+                      style={{
+                        width: doneColor === hex ? '28px' : '20px', height: doneColor === hex ? '28px' : '20px',
+                        backgroundColor: hex, borderRadius: '8px', cursor: 'pointer', border: doneColor === hex ? '2px solid white' : 'none', transition: 'all 0.2s'
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+            </div>
           )}
 
           {/* ---- TAB NÂNG CAO ---- */}

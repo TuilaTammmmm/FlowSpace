@@ -148,17 +148,26 @@ function Home() {
   // Per-project stats
   const [tasks, setTasks]             = useState([]); // tasks of active project
   const [chartData, setChartData] = useState([]);
-  const [weekOffset, setWeekOffset] = useState(0); // 0 = this week, -1 = last week, etc.
+  const [weekOffset, setWeekOffset] = useState(0); 
   const [allTasks, setAllTasks]   = useState([]);
   const [projectAction, setProjectAction] = useState(null);
   const [showAddProject, setShowAddProject] = useState(false);
-
-  // Derived
-  const [doneCount, setDoneCount]           = useState(0);
-  const [todoCount, setTodoCount]           = useState(0);
+  const [earliestProjectDate, setEarliestProjectDate] = useState(null);
+  const [doneCount, setDoneCount] = useState(0);
   const [inProgressCount, setInProgressCount] = useState(0);
-  const [overdueCount, setOverdueCount]     = useState(0);
-  const [percent, setPercent]               = useState(0);
+  const [todoCount, setTodoCount] = useState(0);
+  const [overdueCount, setOverdueCount] = useState(0);
+  const [percent, setPercent] = useState(0);
+
+  // Load earliest project date once
+  useEffect(() => {
+    if (user) {
+      MOCK_API.getEarliestProjectDate(user.id).then(date => {
+        if (date) setEarliestProjectDate(new Date(date));
+        else setEarliestProjectDate(new Date()); // No projects = start now
+      });
+    }
+  }, [user]);
 
   const getGreeting = () => {
     const h = new Date().getHours();
@@ -167,41 +176,80 @@ function Home() {
     return 'Chào buổi tối';
   };
 
-  // Load stats history for the chart + Live Update today's stats for ACTIVE PROJECT
+  const getWeekNumber = (targetDate) => {
+    if (!earliestProjectDate) return 1;
+    const start = new Date(earliestProjectDate);
+    // Start of the week containing start date
+    const day = start.getDay();
+    const diff = start.getDate() - (day === 0 ? 6 : day - 1);
+    const startMonday = new Date(start.setDate(diff));
+    startMonday.setHours(0,0,0,0);
+
+    const target = new Date(targetDate);
+    const targetDay = target.getDay();
+    const targetDiff = target.getDate() - (targetDay === 0 ? 6 : targetDay - 1);
+    const targetMonday = new Date(target.setDate(targetDiff));
+    targetMonday.setHours(0,0,0,0);
+
+    const weeks = Math.round((targetMonday - startMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
+    return weeks > 0 ? weeks : 1;
+  };
+
+  const currentWeekNum = earliestProjectDate ? getWeekNumber(new Date()) : 1;
+  const viewWeekNum    = earliestProjectDate ? getWeekNumber(new Date(new Date().setDate(new Date().getDate() + (weekOffset * 7)))) : 1;
+
+  // Load stats history for the chart + Update Aggregate snapshot
   useEffect(() => {
-    if (!user || !activeProjectId) return;
+    if (!user) return;
     
     const updateAndLoadStats = async () => {
-      // Use local date string for DB comparison
       const now = new Date();
       const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-      // 1. Compute CURRENT PROJECT snapshot LIVE from its tasks
-      const todaySnap = {
-        date: todayStr,
-        projectId: activeProjectId,
-        total: tasks.length,
-        done: tasks.filter(t => t.status === 'done').length,
-        active: tasks.filter(t => t.status !== 'done').length, // Combined Todo + In-Progress
-        overdue: tasks.filter(t => {
-           const d = t.deadline ? new Date(t.deadline) : null;
-           d?.setHours(0,0,0,0);
-           return d && t.status !== 'done' && d < new Date().setHours(0,0,0,0);
-        }).length
-      };
+      // 1. UPDATE LIVE SNAPSHOTS (Aggregate and Per-Project)
+      if (weekOffset === 0) {
+        // Find ALL tasks for ALL projects
+        const allTasksData = await MOCK_API.getAllTasks(user.id);
+        
+        // Save Overall Aggregate (projectId = null)
+        const overallSnap = {
+          date: todayStr,
+          projectId: null,
+          total: allTasksData.length,
+          done: allTasksData.filter(t => t.status === 'done').length,
+          active: allTasksData.filter(t => t.status !== 'done').length,
+          overdue: allTasksData.filter(t => {
+             const d = t.deadline ? new Date(t.deadline) : null;
+             d?.setHours(0,0,0,0);
+             return d && t.status !== 'done' && d < new Date().setHours(0,0,0,0);
+          }).length
+        };
+        await MOCK_API.saveDailyStats(user.id, overallSnap);
 
-      // 2. Save stats for today if this is the CURRENT week
-      if (tasks.length > 0 && weekOffset === 0) {
-        await MOCK_API.saveDailyStats(user.id, todaySnap);
+        // Save Per-Project (to keep Kanban views accurate)
+        if (activeProjectId && tasks.length > 0) {
+          const projectSnap = {
+            date: todayStr,
+            projectId: activeProjectId,
+            total: tasks.length,
+            done: tasks.filter(t => t.status === 'done').length,
+            active: tasks.filter(t => t.status !== 'done').length,
+            overdue: tasks.filter(t => {
+               const d = t.deadline ? new Date(t.deadline) : null;
+               d?.setHours(0,0,0,0);
+               return d && t.status !== 'done' && d < new Date().setHours(0,0,0,0);
+            }).length
+          };
+          await MOCK_API.saveDailyStats(user.id, projectSnap);
+        }
       }
 
-      // 3. Fetch history for the active project
-      const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
+      // 2. FETCH HISTORY - Show aggregate if projectId is null, else show per-project
+      const history = await MOCK_API.getDailyStats(user.id, activeProjectId || null);
       formatChartData(history);
     };
 
     const formatChartData = (raw) => {
-      // Get Monday of the target week (based on weekOffset)
       const now = new Date();
       now.setDate(now.getDate() + (weekOffset * 7));
       const day = now.getDay();
@@ -224,7 +272,7 @@ function Home() {
           fullDate: iso,
           total: existing ? existing.total : 0,
           done: existing ? existing.done : 0,
-          pending: existing ? existing.active : 0, // Current Active = Pending
+          pending: existing ? existing.active : 0,
           isFuture: d > new Date()
         });
       }
@@ -287,9 +335,26 @@ function Home() {
   return (
     <div className="container-fluid p-0" style={{ maxWidth: '1200px' }}>
 
-      {/* Project Tabs */}
+      {/* Workspace Switcher */}
       <div className="d-flex mb-4 px-1 align-items-center workspace-tabs-scroll"
         style={{ gap: '4px', borderBottom: '1px solid var(--border-thin)', paddingBottom: '4px' }}>
+        
+        {/* Overview Tab */}
+        <div className="position-relative" style={{ flexShrink: 0 }}>
+          <div 
+            onClick={() => changeActiveProject(null)}
+            className={`px-4 py-2 fw-bold rounded-3 small transition-all cursor-pointer`}
+            style={{
+              background: !activeProjectId ? 'var(--primary)' : 'transparent',
+              color: !activeProjectId ? '#FFF' : 'var(--text-secondary)',
+              border: '1px solid',
+              borderColor: !activeProjectId ? 'var(--primary)' : 'transparent'
+            }}
+          >
+            Tất cả dự án
+          </div>
+        </div>
+
         {projects.map(proj => (
           <div key={proj.id} 
             className="position-relative group"
@@ -388,11 +453,11 @@ function Home() {
                   <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: 'var(--primary)' }}>
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }}></span> Tổng
                   </span>
-                  <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: '#F59E0B' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B', display: 'inline-block' }}></span> Đang làm
+                  <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: 'var(--inprogress-color)' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--inprogress-color)', display: 'inline-block' }}></span> Đang làm
                   </span>
-                  <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: '#10B981' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span> Đã xong
+                  <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: 'var(--done-color)' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--done-color)', display: 'inline-block' }}></span> Đã xong
                   </span>
                 </div>
               </div>
@@ -408,8 +473,8 @@ function Home() {
                         <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}   />
                       </linearGradient>
                       <linearGradient id="gDone" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor="#10B981" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}   />
+                        <stop offset="5%" stopColor="var(--done-color)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--done-color)" stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id="gPending" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%"  stopColor="#F59E0B" stopOpacity={0.3} />

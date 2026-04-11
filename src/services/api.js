@@ -59,6 +59,17 @@ const sb = {
         return { id: data.id, userId: data.user_id, name: data.name, isMuted: data.is_muted };
     },
 
+    getEarliestProjectDate: async (userId) => {
+        const { data, error } = await supabase.from('projects')
+            .select('created_at')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+        if (error) return null;
+        return data ? data.created_at : null;
+    },
+
     deleteProject: async (id) => {
         // Delete all tasks first
         await supabase.from('tasks').delete().eq('project_id', id);
@@ -124,14 +135,11 @@ const sb = {
 
     // Daily Stats
     getDailyStats: async (userId, projectId) => {
-        let query = supabase.from('daily_stats')
-            .select('*')
-            .eq('user_id', userId)
-            .order('date', { ascending: true })
-            .limit(30);
-            
-        if (projectId) query = query.eq('project_id', projectId);
-        
+        let query = supabase.from('daily_stats').select('*').eq('user_id', userId).order('date', { ascending: true }).limit(60);
+        if (projectId !== undefined) {
+          if (projectId === null) query = query.is('project_id', null);
+          else query = query.eq('project_id', projectId);
+        }
         const { data, error } = await query;
         if (error) throw error;
         return data.map(d => ({
@@ -142,11 +150,10 @@ const sb = {
     },
 
     saveDailyStats: async (userId, stats) => {
-        if (!stats.projectId) return null; // Avoid saving global stats without project context
         const { data, error } = await supabase.from('daily_stats')
             .upsert({
                 user_id: userId,
-                project_id: stats.projectId,
+                project_id: stats.projectId || null,
                 date: stats.date,
                 total_tasks: stats.total,
                 completed_tasks: stats.done,

@@ -10,9 +10,11 @@
   --surface-2:   #1D2433;
   --surface-3:   #283145;
 
-  --primary:       #FF3D3D;
-  --primary-hover: #D32F2F;
-  --primary-glow:  rgba(255, 61, 61, 0.35);
+  --primary: #FF3D3D;
+  --primary-glow: rgba(255, 61, 61, 0.4);
+  --inprogress-color: #F59E0B;
+  --done-color: #10B981;
+  --sidebar-active: rgba(255, 255, 255, 0.08);
 
   --text-primary:   #FFFFFF;
   --text-secondary: #CBD5E1; /* Boosted for better contrast */

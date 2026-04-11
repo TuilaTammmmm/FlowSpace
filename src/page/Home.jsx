@@ -202,9 +202,11 @@ function Home() {
   useEffect(() => {
     if (!user) return;
     
+    const loadStats = async () => {
       // 2. FETCH HISTORY for the active project
       const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
       formatChartData(history);
+    };
 
     const formatChartData = (raw) => {
       const now = new Date();
@@ -236,8 +238,8 @@ function Home() {
       setChartData(weekData);
     };
 
-    updateAndLoadStats();
-  }, [user, activeProjectId, tasks, weekOffset]); 
+    loadStats();
+  }, [user, activeProjectId, weekOffset]); 
 
   // Load current project tasks for the ring/stats
   useEffect(() => {

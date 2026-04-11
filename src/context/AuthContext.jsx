@@ -77,13 +77,27 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('flowspace_user', JSON.stringify(updatedUser));
     };
 
-    const logout = () => {
+    const loginWithGoogle = async () => {
+        if (!supabase) throw new Error('Supabase chưa được cấu hình');
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: window.location.origin + '/',
+            },
+        });
+        if (error) throw error;
+    };
+
+    const logout = async () => {
+        if (supabase) {
+            await supabase.auth.signOut();
+        }
         setUser(null);
         localStorage.removeItem('flowspace_user');
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, updateUserProfile, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loginWithGoogle, updateUserProfile, loading }}>
             {children}
         </AuthContext.Provider>
     );

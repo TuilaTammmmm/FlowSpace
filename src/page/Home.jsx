@@ -146,31 +146,20 @@ function Home() {
   const { projects, activeProjectId, changeActiveProject, addProject, deleteProject, renameProject } = useProjects();
 
   // Per-project stats
-  const [tasks, setTasks]             = useState([]); // tasks of active project
-  const [chartData, setChartData] = useState([]);
-  const [weekOffset, setWeekOffset] = useState(0); 
-  const [allTasks, setAllTasks]   = useState([]);
+  const [tasks, setTasks]             = useState([]);
+  const [chartData, setChartData]     = useState([]);
+  const [weekOffset, setWeekOffset]   = useState(0); // 0 = current week, -1 = last week, etc.
+  const [allTasks, setAllTasks]       = useState([]);
   const [projectAction, setProjectAction] = useState(null);
   const [showAddProject, setShowAddProject] = useState(false);
-  const [earliestProjectDate, setEarliestProjectDate] = useState(null);
-  const [doneCount, setDoneCount] = useState(0);
+  const [doneCount, setDoneCount]     = useState(0);
   const [inProgressCount, setInProgressCount] = useState(0);
-  const [todoCount, setTodoCount] = useState(0);
+  const [todoCount, setTodoCount]     = useState(0);
   const [overdueCount, setOverdueCount] = useState(0);
-  const [percent, setPercent] = useState(0);
+  const [percent, setPercent]         = useState(0);
 
-  // Load earliest project date once
-  useEffect(() => {
-    if (user) {
-      MOCK_API.getEarliestProjectDate(user.id).then(date => {
-        if (date) setEarliestProjectDate(new Date(date));
-        else setEarliestProjectDate(new Date());
-      }).catch(err => {
-        console.error('Failed to load earliest project date:', err);
-        setEarliestProjectDate(new Date());
-      });
-    }
-  }, [user]);
+  // Reset weekOffset when switching projects
+  useEffect(() => { setWeekOffset(0); }, [activeProjectId]);
 
   const getGreeting = () => {
     const h = new Date().getHours();
@@ -179,49 +168,55 @@ function Home() {
     return 'Chào buổi tối';
   };
 
-  const getWeekNumber = (targetDate) => {
-    if (!earliestProjectDate) return 1;
-    const start = new Date(earliestProjectDate);
-    // Start of the week containing start date
-    const day = start.getDay();
-    const diff = start.getDate() - (day === 0 ? 6 : day - 1);
-    const startMonday = new Date(start.setDate(diff));
-    startMonday.setHours(0,0,0,0);
+  // ── Week helpers: Week 1 = Monday of the week containing the active project's created_at ──
+  const activeProject = projects.find(p => p.id === activeProjectId);
 
-    const target = new Date(targetDate);
-    const targetDay = target.getDay();
-    const targetDiff = target.getDate() - (targetDay === 0 ? 6 : targetDay - 1);
-    const targetMonday = new Date(target.setDate(targetDiff));
-    targetMonday.setHours(0,0,0,0);
-
-    const weeks = Math.round((targetMonday - startMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
-    return weeks > 0 ? weeks : 1;
+  const getMondayOfDate = (d) => {
+    const dt = new Date(d);
+    const day = dt.getDay(); // 0=Sun, 1=Mon...
+    const diff = day === 0 ? 6 : day - 1; // days since Monday
+    dt.setDate(dt.getDate() - diff);
+    dt.setHours(0, 0, 0, 0);
+    return dt;
   };
 
-  const currentWeekNum = earliestProjectDate ? getWeekNumber(new Date()) : 1;
-  const viewWeekNum    = earliestProjectDate ? getWeekNumber(new Date(new Date().setDate(new Date().getDate() + (weekOffset * 7)))) : 1;
+  // Monday of Week 1 (project creation week)
+  const projectCreatedAt = activeProject?.createdAt || activeProject?.created_at;
+  const week1Monday = projectCreatedAt ? getMondayOfDate(new Date(projectCreatedAt)) : getMondayOfDate(new Date());
+  
+  // Monday of current week
+  const currentMonday = getMondayOfDate(new Date());
+  
+  // Total weeks from week1 to current
+  const totalWeeks = Math.max(1, Math.round((currentMonday - week1Monday) / (7 * 24 * 60 * 60 * 1000)) + 1);
+  
+  // Current view: weekOffset 0 = current week, -1 = previous week
+  // viewWeekNum: 1-based week number
+  const viewWeekNum = totalWeeks + weekOffset;
+  const currentWeekNum = totalWeeks;
+  
+  // Bounds: can't go before week 1, can't go past current week
+  const canGoPrev = viewWeekNum > 1;
+  const canGoNext = weekOffset < 0;
 
-  // Load stats history for the chart + Update Aggregate snapshot
+  // Monday of the viewed week
+  const viewMonday = new Date(currentMonday);
+  viewMonday.setDate(viewMonday.getDate() + (weekOffset * 7));
+
+  // Load stats history for the chart
   useEffect(() => {
     if (!user) return;
-    
-    const formatChartData = (raw) => {
-      const now = new Date();
-      now.setDate(now.getDate() + (weekOffset * 7));
-      const day = now.getDay();
-      const diff = now.getDate() - (day === 0 ? 6 : day - 1);
-      const targetMonday = new Date(now.setDate(diff));
-      targetMonday.setHours(0, 0, 0, 0);
 
-      const weekData = [];
-      const weekdays = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
-      
+    const weekData = [];
+    const weekdays = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
+
+    const buildChart = (raw) => {
       for (let i = 0; i < 7; i++) {
-        const d = new Date(targetMonday);
-        d.setDate(targetMonday.getDate() + i);
+        const d = new Date(viewMonday);
+        d.setDate(viewMonday.getDate() + i);
         const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const label = `${weekdays[i]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
-        
+
         const existing = raw.find(s => s.date === iso);
         weekData.push({
           name: label,
@@ -237,16 +232,16 @@ function Home() {
 
     const loadStats = async () => {
       try {
-        // FETCH HISTORY for the active project
         const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
-        formatChartData(history);
+        buildChart(history);
       } catch (err) {
         console.error("Failed to load stats:", err);
+        buildChart([]);
       }
     };
 
     loadStats();
-  }, [user, activeProjectId, weekOffset]); 
+  }, [user, activeProjectId, weekOffset]);
 
   // Load current project tasks for the ring/stats
   useEffect(() => {
@@ -392,18 +387,31 @@ function Home() {
               <div>
                 <h5 className="fw-bold text-white mb-0">Hiệu suất hoàn thành</h5>
                 <p className="text-secondary small mb-0 opacity-75">
-                  {activeProjectId ? `Dự án: ${projects.find(p => p.id === activeProjectId)?.name}` : 'Chọn dự án để xem'} • T2 - CN
+                  {activeProjectId ? `Dự án: ${projects.find(p => p.id === activeProjectId)?.name}` : 'Chọn dự án để xem'} • Tuần {viewWeekNum}{viewWeekNum === currentWeekNum ? ' (hiện tại)' : ''}
                 </p>
               </div>
               <div className="d-flex flex-column align-items-end gap-2">
-                <div className="d-flex gap-2">
-                  <button onClick={() => setWeekOffset(prev => prev - 1)} className="btn btn-sm btn-dark border-0 rounded-circle p-0 d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.05)' }}>
+                <div className="d-flex gap-2 align-items-center">
+                  <button 
+                    onClick={() => canGoPrev && setWeekOffset(prev => prev - 1)} 
+                    disabled={!canGoPrev}
+                    className="btn btn-sm btn-dark border-0 rounded-circle p-0 d-flex align-items-center justify-content-center" 
+                    style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.05)', opacity: canGoPrev ? 1 : 0.3 }}>
                     <i className="bi bi-chevron-left"></i>
                   </button>
-                  <button onClick={() => setWeekOffset(0)} className="btn btn-sm btn-dark border-0 px-2 small fw-bold" style={{ fontSize: '10px', background: 'rgba(255,255,255,0.05)' }}>Tuần này</button>
-                  <button onClick={() => setWeekOffset(prev => prev + 1)} className="btn btn-sm btn-dark border-0 rounded-circle p-0 d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.05)' }}>
+                  <span className="fw-bold small text-white" style={{ minWidth: '60px', textAlign: 'center', fontSize: '12px' }}>
+                    Tuần {viewWeekNum}
+                  </span>
+                  <button 
+                    onClick={() => canGoNext && setWeekOffset(prev => prev + 1)} 
+                    disabled={!canGoNext}
+                    className="btn btn-sm btn-dark border-0 rounded-circle p-0 d-flex align-items-center justify-content-center" 
+                    style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.05)', opacity: canGoNext ? 1 : 0.3 }}>
                     <i className="bi bi-chevron-right"></i>
                   </button>
+                  {weekOffset !== 0 && (
+                    <button onClick={() => setWeekOffset(0)} className="btn btn-sm btn-dark border-0 px-2 small fw-bold" style={{ fontSize: '10px', background: 'rgba(255,255,255,0.08)' }}>Tuần này</button>
+                  )}
                 </div>
                 <div className="d-flex gap-3 align-items-center">
                   <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: 'var(--primary)' }}>

@@ -8,6 +8,14 @@ const delay = (ms) => new Promise(r => setTimeout(r, ms));
 const sb = {
     // Auth
     login: async (email, password) => {
+        // Try Supabase Auth first
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+        if (!authError && authData?.user) {
+            // Get user profile from public.users table
+            const { data: dbUser } = await supabase.from('users').select('*').eq('email', email).single();
+            if (dbUser) return { user: dbUser, token: 'sb-jwt-' + dbUser.id };
+        }
+        // Fallback: direct table query (for users not yet in auth)
         const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password).single();
         if (error || !data) throw new Error('Sai email hoặc mật khẩu');
         return { user: data, token: 'sb-jwt-' + data.id };
@@ -37,7 +45,7 @@ const sb = {
         const { data, error } = await supabase.from('projects').select('*').eq('user_id', userId).order('created_at', { ascending: true });
         if (error) throw error;
         return data.map(p => ({
-            id: p.id, userId: p.user_id, name: p.name, isMuted: p.is_muted
+            id: p.id, userId: p.user_id, name: p.name, isMuted: p.is_muted, createdAt: p.created_at
         }));
     },
 

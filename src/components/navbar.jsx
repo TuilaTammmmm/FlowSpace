@@ -115,8 +115,8 @@ function Navbar() {
 
       {/* Bottom nav */}
       <div style={{ borderTop: '1px solid var(--border-thin)', paddingTop: '10px', paddingBottom: '14px' }}>
-        {renderNavItem('/setting', 'bi bi-gear', 'Cài đặt hệ thống')}
-        {renderNavItem('/user', 'bi bi-person-circle', 'Hồ sơ người dùng')}
+        {renderNavItem('/setting', 'bi bi-gear', 'Cài đặt')}
+        {renderNavItem('/user', 'bi bi-person-circle', 'Tài khoản')}
       </div>
     </nav>
   );

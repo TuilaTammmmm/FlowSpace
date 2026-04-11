@@ -40,6 +40,7 @@ function Topbar() {
 
   const markRead = (id) => setReadIds(prev => new Set([...prev, id]));
   const markAllRead = () => setReadIds(new Set(overdueNotifs.map(t => t.id)));
+  const deleteNotif = (id) => setOverdueNotifs(prev => prev.filter(n => n.id !== id));
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '';
 
@@ -122,16 +123,24 @@ function Topbar() {
                     const isRead = readIds.has(task.id);
                     return (
                       <div key={task.id}
-                        className="px-4 py-3 d-flex align-items-start gap-3"
+                        className={`px-4 py-3 d-flex align-items-start gap-3 position-relative ${isRead ? 'notif-item-read' : ''}`}
                         onClick={() => { markRead(task.id); navigate('/kanban'); setShowNotif(false); }}
                         style={{
                           borderBottom: '1px solid var(--border-thin)', cursor: 'pointer',
-                          opacity: isRead ? 0.45 : 1,
-                          transition: 'opacity 0.2s, background 0.15s',
+                          transition: 'background 0.15s, opacity 0.3s, filter 0.3s',
                         }}
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
+                        {/* Delete button */}
+                        <button 
+                          className="btn p-1 position-absolute top-0 end-0 mt-2 me-2"
+                          style={{ color: 'var(--text-muted)', fontSize: '10px' }}
+                          onClick={(e) => { e.stopPropagation(); deleteNotif(task.id); }}
+                        >
+                          <i className="bi bi-x-lg"></i>
+                        </button>
+
                         <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-1"
                           style={{ width: '28px', height: '28px', background: isRead ? 'rgba(255,255,255,0.05)' : 'rgba(255,61,61,0.12)' }}>
                           <i className="bi bi-exclamation-triangle-fill"
@@ -173,9 +182,13 @@ function Topbar() {
               <div className="fw-bold" style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{user?.name || 'Người dùng'}</div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Thành viên</div>
             </div>
-            <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+            <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0 overflow-hidden"
               style={{ width: '36px', height: '36px', fontSize: '13px', background: 'var(--primary)', boxShadow: '0 4px 12px var(--primary-glow)' }}>
-              {user?.name?.substring(0, 2).toUpperCase() || 'DT'}
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                user?.name?.substring(0, 2).toUpperCase() || 'DT'
+              )}
             </div>
           </button>
 

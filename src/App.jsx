@@ -9,6 +9,7 @@ import Setting from "./page/Setting";
 import User from "./page/User";
 
 import Login from "./page/Login";
+import Register from "./page/Register";
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         {/* PHẦN 1: Tầng Auth (Không Sidebar) */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
-          {/* Chừa chỗ cho Register sau */}
+          <Route path="/register" element={<Register />} />
         </Route>
 
         {/* PHẦN 2: Tầng Private (Bảo mật, Có Sidebar) */}

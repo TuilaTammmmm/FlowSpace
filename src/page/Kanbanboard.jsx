@@ -164,10 +164,7 @@ function KanbanColumn({ status, label, icon, color, accentBg, tasks, onDragOver,
 function Kanbanboard() {
   const { projects, activeProjectId, changeActiveProject, renameProject, deleteProject, addProject, showToast } = useProjects();
   const [tasks, setTasks]     = useState([]);
-  const [loading, setLoading] = useState(false);
   const [projectAction, setProjectAction] = useState(null);
-
-  const activeProject = projects.find(p => p.id === activeProjectId);
 
   const handleCreateFirst = () => {
     const name = prompt('Nhập tên dự án mới:');
@@ -176,9 +173,8 @@ function Kanbanboard() {
 
   useEffect(() => {
     if (activeProjectId) {
-      setLoading(true);
       MOCK_API.getTasksByProjectId(activeProjectId).then(data => {
-        setTasks(data); setLoading(false);
+        setTasks(data);
       });
     }
   }, [activeProjectId]);
@@ -191,8 +187,8 @@ function Kanbanboard() {
 
   const handleDragOver = (e) => e.preventDefault();
   const handleDrop = async (e, newStatus) => {
-    const id = parseInt(e.dataTransfer.getData('taskId'));
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+    const id = e.dataTransfer.getData('taskId');
+    setTasks(prev => prev.map(t => String(t.id) === String(id) ? { ...t, status: newStatus } : t));
     await MOCK_API.updateTaskStatus(id, newStatus);
   };
 
@@ -233,48 +229,46 @@ function Kanbanboard() {
   return (
     <div className="container-fluid p-0 d-flex flex-column" style={{ minHeight: '100%' }}>
 
-      {/* Project Tabs + Manage button */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div className="d-flex align-items-center overflow-auto scrollbar-hide" style={{ gap: '4px', flex: 1 }}>
-          {projects.map(proj => (
-            <div key={proj.id} onClick={() => changeActiveProject(proj.id)}
-              style={{
-                cursor: 'pointer', flexShrink: 0,
-                borderBottom: activeProjectId === proj.id ? '2px solid var(--primary)' : '2px solid transparent',
-                paddingBottom: '2px',
+      {/* Project Tabs */}
+      <div className="d-flex mb-4 px-1 align-items-center workspace-tabs-scroll"
+        style={{ gap: '4px', borderBottom: '1px solid var(--border-thin)', paddingBottom: '4px' }}>
+        {projects.map(proj => (
+          <div key={proj.id} 
+            className="position-relative group"
+            style={{ flexShrink: 0 }}>
+            <div 
+              onClick={() => changeActiveProject(proj.id)}
+              className="px-4 py-2 fw-bold rounded-3 small d-flex align-items-center gap-2 transition-all"
+              style={{ 
+                cursor: 'pointer',
+                color: activeProjectId === proj.id ? '#FFF' : 'var(--text-secondary)', 
+                background: activeProjectId === proj.id ? 'var(--primary)' : 'transparent',
+                border: activeProjectId === proj.id ? 'none' : '1px solid transparent',
+                whiteSpace: 'nowrap' 
               }}>
-              <div className="px-4 py-2 fw-bold rounded-3 small"
-                style={{
-                  color: activeProjectId === proj.id ? 'var(--primary)' : 'var(--text-secondary)',
-                  background: activeProjectId === proj.id ? 'rgba(255,61,61,0.08)' : 'transparent',
-                  whiteSpace: 'nowrap',
-                }}>
-                {proj.name}
+              <span>{proj.name}</span>
+              
+              {/* Internal Tab Controls */}
+              <div className="d-flex align-items-center gap-1 ms-1">
+                {proj.isMuted && (
+                  <i className="bi bi-bell-slash-fill" style={{ fontSize: '10px', opacity: 0.8 }}></i>
+                )}
+                <div onClick={(e) => { 
+                  e.stopPropagation(); 
+                  setProjectAction(proj);
+                }} className="hover-scale">
+                  <i className="bi bi-gear-fill" style={{ fontSize: '10px', opacity: 0.6 }}></i>
+                </div>
               </div>
             </div>
-          ))}
-          <div onClick={handleCreateFirst}
-            style={{ cursor: 'pointer', color: 'var(--text-muted)', padding: '8px 12px', flexShrink: 0, opacity: 0.6, transition: 'opacity 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}>
-            <i className="bi bi-plus-lg fw-bold"></i>
           </div>
+        ))}
+        <div onClick={handleCreateFirst}
+          className="fw-bold px-3 py-2 flex-shrink-0"
+          style={{ cursor: 'pointer', color: 'var(--text-muted)', whiteSpace: 'nowrap', opacity: 0.6 }}>
+          <i className="bi bi-plus-lg"></i>
         </div>
-
-        <button
-          onClick={() => setProjectAction(activeProject)}
-          className="btn btn-sm fw-bold px-3 py-2 d-flex align-items-center gap-2 ms-3 flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-thin)', color: 'var(--text-secondary)', borderRadius: '10px', fontSize: '13px' }}
-        >
-          <i className="bi bi-three-dots-vertical"></i> Quản lý
-        </button>
       </div>
-
-      {loading && (
-        <div className="text-center w-100 py-4 text-secondary">
-          <div className="spinner-border spinner-border-sm me-2"></div> Đang tải...
-        </div>
-      )}
 
       {/* Columns */}
       <div className="d-flex gap-3 overflow-auto pb-4" 

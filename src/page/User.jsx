@@ -141,10 +141,37 @@ function User() {
           {/* Avatar + Edit toggle */}
           <div className="d-flex justify-content-between align-items-end mb-4">
             <div className="d-flex align-items-end gap-4">
-              <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-premium"
-                style={{ width: '104px', height: '104px', fontSize: '36px', background: 'var(--primary)', border: '4px solid var(--bg-deep)' }}>
-                {user?.name?.substring(0, 2).toUpperCase() || 'DT'}
+              <div 
+                className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-premium position-relative overflow-hidden cursor-pointer"
+                style={{ width: '104px', height: '104px', fontSize: '36px', background: 'var(--primary)', border: '4px solid var(--bg-deep)' }}
+                onClick={() => document.getElementById('avatarInput').click()}
+              >
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  user?.name?.substring(0, 2).toUpperCase() || 'DT'
+                )}
+                <div className="position-absolute bottom-0 start-0 end-0 py-1 bg-dark bg-opacity-75 text-center" style={{ fontSize: '9px', opacity: 0.8 }}>
+                  Sửa ảnh
+                </div>
               </div>
+              <input 
+                id="avatarInput" 
+                type="file" 
+                hidden 
+                accept="image/*" 
+                onChange={async (e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                      await handleSave('avatar_url', reader.result);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+
               <div className="pb-1">
                 <h3 className="fw-bold mb-1" style={{ color: 'var(--text-primary)' }}>{user?.name}</h3>
                 <div className="d-flex gap-2 flex-wrap">
@@ -219,15 +246,15 @@ function User() {
                 {/* Stats — tổng từ TẤT CẢ dự án */}
                 <div className="row g-3 mt-2">
                   <div className="col-6">
-                    <div className="text-center p-4 rounded-4" style={{ background: 'rgba(255,61,61,0.04)', border: '1px solid rgba(255,61,61,0.1)' }}>
-                      <h1 className="fw-bold mb-1" style={{ color: 'var(--primary)' }}>{projects.length}</h1>
-                      <div className="text-muted fw-bold" style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px' }}>Tổng dự án</div>
+                    <div className="text-center p-4 rounded-4" style={{ background: 'rgba(255, 61, 61, 0.08)', border: '1px solid rgba(255, 61, 61, 0.2)' }}>
+                      <h1 className="fw-bold mb-1" style={{ color: '#FF4D4D' }}>{projects.length}</h1>
+                      <div className="fw-bold" style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255, 255, 255, 0.5)' }}>Tổng dự án</div>
                     </div>
                   </div>
                   <div className="col-6">
-                    <div className="text-center p-4 rounded-4" style={{ background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.1)' }}>
-                      <h1 className="fw-bold text-success mb-1">{doneCount}</h1>
-                      <div className="text-muted fw-bold" style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px' }}>Task xong</div>
+                    <div className="text-center p-4 rounded-4" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                      <h1 className="fw-bold mb-1" style={{ color: '#10B981' }}>{doneCount}</h1>
+                      <div className="fw-bold" style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255, 255, 255, 0.5)' }}>Task xong</div>
                     </div>
                   </div>
                 </div>

@@ -1,63 +1,61 @@
 import { supabase, isSupabaseReady } from './supabase';
 
-// ============================================================
-// INITIAL DATA (fallback khi chưa có Supabase)
-// ============================================================
-const INITIAL_DB = {
-    users: [
-        { id: 1, email: 'dragonkiller2k5@gmail.com', password: '123', name: 'Đào Duy Tâm' }
-    ],
-    projects: [
-        { id: 'p1', userId: 1, name: 'Dự án chính' },
-        { id: 'p2', userId: 1, name: 'Đồ án 1' }
-    ],
-    tasks: [
-        { id: 1, projectId: 'p1', title: 'Thiết kế logo', status: 'todo', tag: 'High', deadline: '2026-04-01', priority: 'Quan trọng', description: 'Logo đỏ gradient', tags: ['Design', 'UI'], createdAt: new Date().toISOString() },
-        { id: 2, projectId: 'p1', title: 'Nghiên cứu React Context', status: 'in-progress', tag: 'Medium', deadline: '2026-04-03', priority: 'Trung bình', description: '', tags: ['Code'], createdAt: new Date().toISOString() }
-    ]
-};
-
-const getDB = () => JSON.parse(localStorage.getItem('flowspace_db') || '{}');
-const saveDB = (db) => localStorage.setItem('flowspace_db', JSON.stringify(db));
-
-const initDB = () => {
-    if (!localStorage.getItem('flowspace_db')) {
-        localStorage.setItem('flowspace_db', JSON.stringify(INITIAL_DB));
-        return;
-    }
-    const db = getDB();
-    let changed = false;
-    db.tasks = (db.tasks || []).map(t => {
-        if (!Array.isArray(t.tags)) { t.tags = []; changed = true; }
-        return t;
-    });
-    if (changed) saveDB(db);
-};
-initDB();
-
 const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
 // ============================================================
-// SUPABASE HELPERS
+// SUPABASE API LAYER
 // ============================================================
 const sb = {
+    // Auth
+    login: async (email, password) => {
+        const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password).single();
+        if (error || !data) throw new Error('Sai email hoặc mật khẩu');
+        return { user: data, token: 'sb-jwt-' + data.id };
+    },
+
+    register: async (email, password, name) => {
+        // Check if exists
+        const { data: existing } = await supabase.from('users').select('id').eq('email', email).single();
+        if (existing) throw new Error('Email đã tồn tại!');
+
+        const { data, error } = await supabase.from('users').insert({
+            email, password, name, department: '', bio: '', avatar_url: ''
+        }).select().single();
+        if (error) throw error;
+        return { user: data, token: 'sb-jwt-' + data.id };
+    },
+
+    updateUserProfile: async (userId, updateData) => {
+        const { data, error } = await supabase.from('users').update(updateData).eq('id', userId).select().single();
+        if (error) throw error;
+        return data;
+    },
+
     // Projects
     getProjectsByUserId: async (userId) => {
         const { data, error } = await supabase.from('projects').select('*').eq('user_id', userId).order('created_at', { ascending: true });
         if (error) throw error;
-        return data.map(p => ({ id: p.id, userId: p.user_id, name: p.name }));
+        return data.map(p => ({
+            id: p.id, userId: p.user_id, name: p.name, isMuted: p.is_muted
+        }));
     },
 
     createProject: async (userId, name) => {
         const { data, error } = await supabase.from('projects').insert({ user_id: userId, name }).select().single();
         if (error) throw error;
-        return { id: data.id, userId: data.user_id, name: data.name };
+        return { id: data.id, userId: data.user_id, name: data.name, isMuted: data.is_muted };
     },
 
     updateProject: async (id, name) => {
         const { data, error } = await supabase.from('projects').update({ name }).eq('id', id).select().single();
         if (error) throw error;
-        return { id: data.id, userId: data.user_id, name: data.name };
+        return { id: data.id, userId: data.user_id, name: data.name, isMuted: data.is_muted };
+    },
+
+    toggleMuteProject: async (id, isMuted) => {
+        const { data, error } = await supabase.from('projects').update({ is_muted: isMuted }).eq('id', id).select().single();
+        if (error) throw error;
+        return { id: data.id, userId: data.user_id, name: data.name, isMuted: data.is_muted };
     },
 
     deleteProject: async (id) => {
@@ -155,159 +153,32 @@ const sb = {
 };
 
 // ============================================================
-// MOCK API (localStorage fallback)
-// ============================================================
-const local = {
-    getProjectsByUserId: async (userId) => {
-        await delay(80);
-        return getDB().projects.filter(p => p.userId === userId);
-    },
-
-    createProject: async (userId, name) => {
-        await delay(80);
-        const db = getDB();
-        const newProject = { id: 'p' + Date.now(), userId, name };
-        db.projects.push(newProject);
-        saveDB(db);
-        return newProject;
-    },
-
-    updateProject: async (id, name) => {
-        await delay(80);
-        const db = getDB();
-        const idx = db.projects.findIndex(p => p.id === id);
-        if (idx > -1) { db.projects[idx].name = name; saveDB(db); return db.projects[idx]; }
-        throw new Error('Project not found');
-    },
-
-    deleteProject: async (id) => {
-        await delay(80);
-        const db = getDB();
-        db.projects = db.projects.filter(p => p.id !== id);
-        db.tasks = db.tasks.filter(t => t.projectId !== id);
-        saveDB(db);
-        return true;
-    },
-
-    getTasksByProjectId: async (projectId) => {
-        await delay(80);
-        return getDB().tasks.filter(t => t.projectId === projectId);
-    },
-
-    getAllTasks: async () => {
-        await delay(80);
-        return getDB().tasks;
-    },
-
-    createTask: async (taskData) => {
-        await delay(80);
-        const db = getDB();
-        const newTask = { ...taskData, id: Date.now(), tags: taskData.tags || [], createdAt: new Date().toISOString() };
-        db.tasks.push(newTask);
-        saveDB(db);
-        return newTask;
-    },
-
-    updateTask: async (taskId, updatedData) => {
-        await delay(80);
-        const db = getDB();
-        const idx = db.tasks.findIndex(t => t.id === taskId);
-        if (idx > -1) {
-            db.tasks[idx] = { ...db.tasks[idx], ...updatedData };
-            saveDB(db);
-            return db.tasks[idx];
-        }
-        throw new Error('Task not found');
-    },
-
-    deleteTask: async (taskId) => {
-        await delay(80);
-        const db = getDB();
-        db.tasks = db.tasks.filter(t => t.id !== taskId);
-        saveDB(db);
-        return true;
-    },
-
-    login: async (email, password) => {
-        await delay(200);
-        const db = getDB();
-        const user = db.users.find(u => u.email === email && u.password === password);
-        if (!user) throw new Error('Sai email hoặc mật khẩu');
-        return { user, token: 'mock-jwt-' + user.id };
-    },
-
-    register: async (email, password, name) => {
-        await delay(200);
-        const db = getDB();
-        if (db.users.some(u => u.email === email)) throw new Error('Email đã tồn tại!');
-        const newUser = { id: Date.now(), email, password, name };
-        db.users.push(newUser);
-        saveDB(db);
-        return { user: newUser, token: 'mock-jwt-' + newUser.id };
-    },
-
-    updateUserProfile: async (userId, data) => {
-        await delay(80);
-        const db = getDB();
-        const idx = db.users.findIndex(u => u.id === userId);
-        if (idx > -1) {
-            db.users[idx] = { ...db.users[idx], ...data };
-            saveDB(db);
-            return db.users[idx];
-        }
-        throw new Error('User not found');
-    },
-
-    clearData: () => {
-        localStorage.removeItem('flowspace_db');
-        localStorage.removeItem('flowspace_stats');
-        initDB();
-        return true;
-    },
-
-    getDailyStats: async (userId) => {
-        await delay(80);
-        const stats = JSON.parse(localStorage.getItem('flowspace_stats') || '[]');
-        return stats.filter(s => s.userId === userId);
-    },
-
-    saveDailyStats: async (userId, stats) => {
-        await delay(80);
-        const dbStats = JSON.parse(localStorage.getItem('flowspace_stats') || '[]');
-        const idx = dbStats.findIndex(s => s.userId === userId && s.date === stats.date);
-        const newEntry = { ...stats, userId };
-        if (idx > -1) dbStats[idx] = newEntry;
-        else dbStats.push(newEntry);
-        localStorage.setItem('flowspace_stats', JSON.stringify(dbStats));
-        return newEntry;
-    }
-};
-
-// ============================================================
-// UNIFIED MOCK_API — uses Supabase if ready, else localStorage
+// EXPORT UNIFIED API (No more localStorage mocks)
 // ============================================================
 export const MOCK_API = {
-    // Auth always uses localStorage (no Supabase auth yet)
-    login: local.login,
-    register: local.register,
-    updateUserProfile: local.updateUserProfile,
-    clearData: local.clearData,
-
+    login: sb.login,
+    register: sb.register,
+    updateUserProfile: sb.updateUserProfile,
+    
     // Projects
-    getProjectsByUserId: async (userId) => isSupabaseReady() ? sb.getProjectsByUserId(userId) : local.getProjectsByUserId(userId),
-    createProject: async (userId, name) => isSupabaseReady() ? sb.createProject(userId, name) : local.createProject(userId, name),
-    updateProject: async (id, name) => isSupabaseReady() ? sb.updateProject(id, name) : local.updateProject(id, name),
-    deleteProject: async (id) => isSupabaseReady() ? sb.deleteProject(id) : local.deleteProject(id),
+    getProjectsByUserId: sb.getProjectsByUserId,
+    createProject: sb.createProject,
+    updateProject: sb.updateProject,
+    deleteProject: sb.deleteProject,
+    toggleMuteProject: sb.toggleMuteProject,
 
     // Tasks
-    getTasksByProjectId: async (projectId) => isSupabaseReady() ? sb.getTasksByProjectId(projectId) : local.getTasksByProjectId(projectId),
-    getAllTasks: async (userId) => isSupabaseReady() && userId ? sb.getAllTasks(userId) : local.getAllTasks(),
-    createTask: async (taskData) => isSupabaseReady() ? sb.createTask(taskData) : local.createTask(taskData),
-    updateTask: async (taskId, data) => isSupabaseReady() ? sb.updateTask(taskId, data) : local.updateTask(taskId, data),
-    updateTaskStatus: async (taskId, status) => isSupabaseReady() ? sb.updateTask(taskId, { status }) : local.updateTask(taskId, { status }),
-    deleteTask: async (taskId) => isSupabaseReady() ? sb.deleteTask(taskId) : local.deleteTask(taskId),
+    getTasksByProjectId: sb.getTasksByProjectId,
+    getAllTasks: sb.getAllTasks,
+    createTask: sb.createTask,
+    updateTask: sb.updateTask,
+    updateTaskStatus: async (taskId, status) => sb.updateTask(taskId, { status }),
+    deleteTask: sb.deleteTask,
 
     // Stats
-    getDailyStats: async (userId) => isSupabaseReady() && userId ? sb.getDailyStats(userId) : local.getDailyStats(userId),
-    saveDailyStats: async (userId, stats) => isSupabaseReady() && userId ? sb.saveDailyStats(userId, stats) : local.saveDailyStats(userId, stats),
+    getDailyStats: sb.getDailyStats,
+    saveDailyStats: sb.saveDailyStats,
+    
+    // Cleanup (Not applicable to real SQL but kept for compatibility)
+    clearData: async () => true,
 };

@@ -11,7 +11,13 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const storedUser = localStorage.getItem('flowspace_user');
-        if (storedUser) setUser(JSON.parse(storedUser));
+        if (storedUser) {
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (e) {
+                localStorage.removeItem('flowspace_user');
+            }
+        }
         setLoading(false);
     }, []);
 

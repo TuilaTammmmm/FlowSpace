@@ -130,22 +130,45 @@ function Home() {
     <div className="container-fluid p-0" style={{ maxWidth: '1200px' }}>
 
       {/* Project Tabs */}
-      <div className="d-flex mb-4 px-1 align-items-center overflow-auto scrollbar-hide"
-        style={{ gap: '4px', borderBottom: '1px solid var(--border-thin)' }}>
+      <div className="d-flex mb-4 px-1 align-items-center workspace-tabs-scroll"
+        style={{ gap: '4px', borderBottom: '1px solid var(--border-thin)', paddingBottom: '4px' }}>
         {projects.map(proj => (
-          <div key={proj.id} onClick={() => changeActiveProject(proj.id)}
-            style={{ cursor: 'pointer', borderBottom: activeProjectId === proj.id ? '2px solid var(--primary)' : '2px solid transparent', marginBottom: '-1px', flexShrink: 0 }}>
-            <div className="px-4 py-2 fw-bold rounded-3 small"
-              style={{ color: activeProjectId === proj.id ? 'var(--primary)' : 'var(--text-secondary)', background: activeProjectId === proj.id ? 'rgba(255,61,61,0.08)' : 'transparent', whiteSpace: 'nowrap' }}>
-              {proj.name}
+          <div key={proj.id} 
+            className="position-relative group"
+            style={{ flexShrink: 0 }}>
+            <div 
+              onClick={() => changeActiveProject(proj.id)}
+              className="px-4 py-2 fw-bold rounded-3 small d-flex align-items-center gap-2 transition-all"
+              style={{ 
+                cursor: 'pointer',
+                color: activeProjectId === proj.id ? '#FFF' : 'var(--text-secondary)', 
+                background: activeProjectId === proj.id ? 'var(--primary)' : 'transparent',
+                border: activeProjectId === proj.id ? 'none' : '1px solid transparent',
+                whiteSpace: 'nowrap' 
+              }}>
+              <span>{proj.name}</span>
+              
+              {/* Internal Tab Controls */}
+              <div className="d-flex align-items-center gap-1 ms-1">
+                {proj.isMuted && (
+                  <i className="bi bi-bell-slash-fill" style={{ fontSize: '10px', opacity: 0.8 }}></i>
+                )}
+                <div onClick={(e) => { 
+                  e.stopPropagation(); 
+                  const newName = prompt('Đổi tên dự án:', proj.name);
+                  if (newName && newName.trim()) {
+                    MOCK_API.updateProject(proj.id, newName.trim()).then(() => window.location.reload());
+                  }
+                }} className="hover-scale">
+                  <i className="bi bi-gear-fill" style={{ fontSize: '10px', opacity: 0.6 }}></i>
+                </div>
+              </div>
             </div>
           </div>
         ))}
         <div onClick={handleAddProject}
           className="fw-bold px-3 py-2 flex-shrink-0"
-          style={{ cursor: 'pointer', color: 'var(--text-muted)', whiteSpace: 'nowrap', opacity: 0.6, transition: 'opacity 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-          onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}>
+          style={{ cursor: 'pointer', color: 'var(--text-muted)', whiteSpace: 'nowrap', opacity: 0.6 }}>
           <i className="bi bi-plus-lg"></i>
         </div>
       </div>
@@ -175,12 +198,12 @@ function Home() {
       </div>
 
       {/* 5 Stat Cards — including Chưa làm */}
-      <div className="d-flex gap-3 mb-4 flex-wrap">
-        <StatCard label="Chưa làm"   value={todoCount}        icon="bi-circle"                   color="#94A3B8" bg="rgba(148,163,184,0.05)" />
-        <StatCard label="Đang làm"   value={inProgressCount}  icon="bi-clock-fill"               color="#F59E0B" bg="rgba(245,158,11,0.05)"  />
-        <StatCard label="Hoàn thành" value={doneCount}        icon="bi-check-circle-fill"         color="#10B981" bg="rgba(16,185,129,0.05)"  />
-        <StatCard label="Quá hạn"    value={overdueCount}     icon="bi-exclamation-triangle-fill" color="#FF3D3D" bg="rgba(255,61,61,0.05)"   />
-        <StatCard label="Tổng task"  value={tasks.length}     icon="bi-list-task"                 color="#818CF8" bg="rgba(129,140,248,0.05)" />
+      <div className="stat-grid-adaptive mb-4">
+        <StatCard label="Chưa làm"   value={todoCount}        icon="bi-circle"                   color="#94A3B8" bg="rgba(148,163,184,0.08)" />
+        <StatCard label="Đang làm"   value={inProgressCount}  icon="bi-clock-fill"               color="#F59E0B" bg="rgba(245,158,11,0.08)"  />
+        <StatCard label="Hoàn thành" value={doneCount}        icon="bi-check-circle-fill"         color="#10B981" bg="rgba(16,185,129,0.08)"  />
+        <StatCard label="Quá hạn"    value={overdueCount}     icon="bi-exclamation-triangle-fill" color="#FF3D3D" bg="rgba(255,61,61,0.08)"   />
+        <StatCard label="Tổng task"  value={tasks.length}     icon="bi-list-task"                 color="#818CF8" bg="rgba(129,140,248,0.08)" />
       </div>
 
       {/* Charts Row */}

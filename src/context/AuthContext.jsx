@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { MOCK_API } from '../services/api';
+import { supabase } from '../services/supabase';
 
 const AuthContext = createContext();
 
@@ -21,37 +22,46 @@ export const AuthProvider = ({ children }) => {
         }
 
         // 2. Listen to Supabase Auth changes (for Google OAuth)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                if (session?.user) {
-                    // Sync with our public.users table
-                    const { data: dbUser } = await supabase.from('users').select('*').eq('email', session.user.email).single();
-                    if (dbUser) {
-                        setUser(dbUser);
-                        localStorage.setItem('flowspace_user', JSON.stringify(dbUser));
-                    } else if (event === 'SIGNED_IN') {
-                        // Create one if it doesn't exist (First time Google Login)
-                        const { data: newUser } = await supabase.from('users').insert({
-                            email: session.user.email,
-                            name: session.user.user_metadata.full_name || 'Google User',
-                            avatar_url: session.user.user_metadata.avatar_url || '',
-                            password: '' // Nullable or empty for OAuth
-                        }).select().single();
-                        if (newUser) {
-                            setUser(newUser);
-                            localStorage.setItem('flowspace_user', JSON.stringify(newUser));
+        if (supabase) {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+                try {
+                    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                        if (session?.user) {
+                            // Sync with our public.users table
+                            const { data: dbUser } = await supabase.from('users').select('*').eq('email', session.user.email).single();
+                            if (dbUser) {
+                                setUser(dbUser);
+                                localStorage.setItem('flowspace_user', JSON.stringify(dbUser));
+                            } else if (event === 'SIGNED_IN') {
+                                // Create one if it doesn't exist (First time Google Login)
+                                const { data: newUser } = await supabase.from('users').insert({
+                                    email: session.user.email,
+                                    name: session.user.user_metadata.full_name || 'Google User',
+                                    avatar_url: session.user.user_metadata.avatar_url || '',
+                                    password: '' // Nullable or empty for OAuth
+                                }).select().single();
+                                if (newUser) {
+                                    setUser(newUser);
+                                    localStorage.setItem('flowspace_user', JSON.stringify(newUser));
+                                }
+                            }
                         }
                     }
+                    if (event === 'SIGNED_OUT') {
+                        setUser(null);
+                        localStorage.removeItem('flowspace_user');
+                    }
+                } catch (err) {
+                    console.error('Auth sync error:', err);
+                } finally {
+                    setLoading(false);
                 }
-            }
-            if (event === 'SIGNED_OUT') {
-                setUser(null);
-                localStorage.removeItem('flowspace_user');
-            }
-            setLoading(false);
-        });
+            });
 
-        return () => subscription.unsubscribe();
+            return () => subscription.unsubscribe();
+        } else {
+            setLoading(false);
+        }
     }, []);
 
     const login = async (email, password) => {

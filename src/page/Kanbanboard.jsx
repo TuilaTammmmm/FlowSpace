@@ -283,11 +283,11 @@ function Kanbanboard() {
                 {proj.isMuted && (
                   <i className="bi bi-bell-slash-fill" style={{ fontSize: '10px', opacity: 0.8 }}></i>
                 )}
-                {/* Gear icon removed as requested, keeping functionality via invisible click area */}
                 <div onClick={(e) => { 
                   e.stopPropagation(); 
                   setProjectAction(proj);
-                }} className="hover-scale" style={{ width: '12px', height: '12px', cursor: 'pointer' }}>
+                }} className="hover-scale">
+                  <i className="bi bi-gear-fill" style={{ fontSize: '10px', opacity: 0.6 }}></i>
                 </div>
               </div>
             </div>

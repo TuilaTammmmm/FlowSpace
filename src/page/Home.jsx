@@ -166,47 +166,67 @@ function Home() {
     return 'Chào buổi tối';
   };
 
-  // Load stats history for the chart + Live Update today's stats
+  // Load stats history for the chart + Live Update today's stats for ACTIVE PROJECT
   useEffect(() => {
-    if (!user) return;
+    if (!user || !activeProjectId) return;
     
     const updateAndLoadStats = async () => {
-      // 1. Compute current day snapshot LIVE from allTasks
+      // 1. Compute CURRENT PROJECT snapshot LIVE from its tasks
       const todayStr = new Date().toISOString().split('T')[0];
       const todaySnap = {
         date: todayStr,
-        total: allTasks.length,
-        done: allTasks.filter(t => t.status === 'done').length,
-        active: allTasks.filter(t => t.status !== 'done').length,
-        overdue: allTasks.filter(t => {
+        projectId: activeProjectId,
+        total: tasks.length,
+        done: tasks.filter(t => t.status === 'done').length,
+        active: tasks.filter(t => t.status !== 'done').length,
+        overdue: tasks.filter(t => {
            const d = t.deadline ? new Date(t.deadline) : null;
            d?.setHours(0,0,0,0);
            return d && t.status !== 'done' && d < new Date().setHours(0,0,0,0);
         }).length
       };
 
-      // 2. Only save if we actually have tasks (avoid blanking stats on initial load if sync is slow)
-      if (allTasks.length > 0) {
+      // 2. Save stats for the current project today
+      if (tasks.length > 0) {
         await MOCK_API.saveDailyStats(user.id, todaySnap);
       }
 
-      // 3. Fetch full history for the chart
-      const history = await MOCK_API.getDailyStats(user.id);
+      // 3. Fetch history for THE ACTIVE PROJECT
+      const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
       formatChartData(history);
     };
 
     const formatChartData = (raw) => {
-      const data = raw.slice(-7).map(s => ({
-        name: new Date(s.date).toLocaleDateString('vi-VN', { weekday: 'short' }),
-        fullDate: s.date,
-        total: s.total,
-        done: s.done
-      }));
-      setChartData(data);
+      // Create a fixed week array T2 -> CN
+      const today = new Date();
+      const currentDay = today.getDay(); // 0 is Sun, 1 is Mon...
+      const diff = today.getDate() - (currentDay === 0 ? 6 : currentDay - 1); // get Monday
+      const monday = new Date(today.setDate(diff));
+      monday.setHours(0,0,0,0);
+
+      const weekData = [];
+      const weekdays = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
+      
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const iso = d.toISOString().split('T')[0];
+        
+        // Find if we have stats for this day
+        const existing = raw.find(s => s.date === iso);
+        weekData.push({
+          name: weekdays[i],
+          fullDate: iso,
+          total: existing ? existing.total : 0,
+          done: existing ? existing.done : 0,
+          isFuture: d > new Date()
+        });
+      }
+      setChartData(weekData);
     };
 
     updateAndLoadStats();
-  }, [user, allTasks]); // Runs whenever tasks change
+  }, [user, activeProjectId, tasks]); 
 
   // Load current project tasks for the ring/stats
   useEffect(() => {
@@ -343,14 +363,14 @@ function Home() {
           <div className="card-premium h-100 shadow-premium">
             <div className="d-flex justify-content-between align-items-start mb-4">
               <div>
-                <h6 className="fw-bold mb-1" style={{ fontSize: '14px', color: 'var(--text-primary)' }}>Hiệu suất tuần này</h6>
+                <h6 className="fw-bold mb-1" style={{ fontSize: '14px', color: 'var(--text-primary)' }}>Hiệu suất hoàn thành</h6>
                 <p className="mb-0" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  {activeProjectId ? `Dự án: ${projects.find(p => p.id === activeProjectId)?.name}` : 'Chọn dự án để xem hiệu suất'}
+                  {activeProjectId ? `Dự án: ${projects.find(p => p.id === activeProjectId)?.name}` : 'Chọn dự án'} • <span style={{ color: 'var(--primary)', fontWeight: 600 }}>T2 - CN</span>
                 </p>
               </div>
               <div className="d-flex gap-3 align-items-center">
                 <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: '#10B981' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span> Hoàn thành
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span> Xong
                 </span>
                 <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: 'var(--primary)' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }}></span> Tổng

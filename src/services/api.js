@@ -130,30 +130,36 @@ const sb = {
     },
 
     // Daily Stats
-    getDailyStats: async (userId) => {
-        const { data, error } = await supabase.from('daily_stats')
+    getDailyStats: async (userId, projectId) => {
+        let query = supabase.from('daily_stats')
             .select('*')
             .eq('user_id', userId)
             .order('date', { ascending: true })
             .limit(30);
+            
+        if (projectId) query = query.eq('project_id', projectId);
+        
+        const { data, error } = await query;
         if (error) throw error;
         return data.map(d => ({
-            id: d.id, userId: d.user_id, date: d.date,
+            id: d.id, userId: d.user_id, projectId: d.project_id, date: d.date,
             total: d.total_tasks, done: d.completed_tasks,
             active: d.active_tasks, overdue: d.overdue_tasks
         }));
     },
 
     saveDailyStats: async (userId, stats) => {
+        if (!stats.projectId) return null; // Avoid saving global stats without project context
         const { data, error } = await supabase.from('daily_stats')
             .upsert({
                 user_id: userId,
+                project_id: stats.projectId,
                 date: stats.date,
                 total_tasks: stats.total,
                 completed_tasks: stats.done,
                 active_tasks: stats.active,
                 overdue_tasks: stats.overdue
-            }, { onConflict: 'user_id,date' })
+            }, { onConflict: 'user_id,project_id,date' })
             .select().single();
         if (error) throw error;
         return data;

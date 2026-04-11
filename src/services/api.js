@@ -192,6 +192,7 @@ export const MOCK_API = {
     updateProject: sb.updateProject,
     deleteProject: sb.deleteProject,
     toggleMuteProject: sb.toggleMuteProject,
+    getEarliestProjectDate: sb.getEarliestProjectDate,
 
     // Tasks
     getTasksByProjectId: sb.getTasksByProjectId,

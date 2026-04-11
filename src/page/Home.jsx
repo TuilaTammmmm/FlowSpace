@@ -147,7 +147,9 @@ function Home() {
 
   // Per-project stats
   const [tasks, setTasks]             = useState([]); // tasks of active project
-  const [allTasks, setAllTasks]       = useState([]); // tasks of ALL projects
+  const [chartData, setChartData] = useState([]);
+  const [weekOffset, setWeekOffset] = useState(0); // 0 = this week, -1 = last week, etc.
+  const [allTasks, setAllTasks]   = useState([]);
   const [projectAction, setProjectAction] = useState(null);
   const [showAddProject, setShowAddProject] = useState(false);
 
@@ -157,7 +159,6 @@ function Home() {
   const [inProgressCount, setInProgressCount] = useState(0);
   const [overdueCount, setOverdueCount]     = useState(0);
   const [percent, setPercent]               = useState(0);
-  const [chartData, setChartData]           = useState([]);
 
   const getGreeting = () => {
     const h = new Date().getHours();
@@ -171,14 +172,17 @@ function Home() {
     if (!user || !activeProjectId) return;
     
     const updateAndLoadStats = async () => {
+      // Use local date string for DB comparison
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
       // 1. Compute CURRENT PROJECT snapshot LIVE from its tasks
-      const todayStr = new Date().toISOString().split('T')[0];
       const todaySnap = {
         date: todayStr,
         projectId: activeProjectId,
         total: tasks.length,
         done: tasks.filter(t => t.status === 'done').length,
-        active: tasks.filter(t => t.status !== 'done').length,
+        active: tasks.filter(t => t.status !== 'done').length, // Combined Todo + In-Progress
         overdue: tasks.filter(t => {
            const d = t.deadline ? new Date(t.deadline) : null;
            d?.setHours(0,0,0,0);
@@ -186,39 +190,41 @@ function Home() {
         }).length
       };
 
-      // 2. Save stats for the current project today
-      if (tasks.length > 0) {
+      // 2. Save stats for today if this is the CURRENT week
+      if (tasks.length > 0 && weekOffset === 0) {
         await MOCK_API.saveDailyStats(user.id, todaySnap);
       }
 
-      // 3. Fetch history for THE ACTIVE PROJECT
+      // 3. Fetch history for the active project
       const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
       formatChartData(history);
     };
 
     const formatChartData = (raw) => {
-      // Create a fixed week array T2 -> CN
-      const today = new Date();
-      const currentDay = today.getDay(); // 0 is Sun, 1 is Mon...
-      const diff = today.getDate() - (currentDay === 0 ? 6 : currentDay - 1); // get Monday
-      const monday = new Date(today.setDate(diff));
-      monday.setHours(0,0,0,0);
+      // Get Monday of the target week (based on weekOffset)
+      const now = new Date();
+      now.setDate(now.getDate() + (weekOffset * 7));
+      const day = now.getDay();
+      const diff = now.getDate() - (day === 0 ? 6 : day - 1);
+      const targetMonday = new Date(now.setDate(diff));
+      targetMonday.setHours(0, 0, 0, 0);
 
       const weekData = [];
       const weekdays = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
       
       for (let i = 0; i < 7; i++) {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        const iso = d.toISOString().split('T')[0];
+        const d = new Date(targetMonday);
+        d.setDate(targetMonday.getDate() + i);
+        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const label = `${weekdays[i]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
         
-        // Find if we have stats for this day
         const existing = raw.find(s => s.date === iso);
         weekData.push({
-          name: weekdays[i],
+          name: label,
           fullDate: iso,
           total: existing ? existing.total : 0,
           done: existing ? existing.done : 0,
+          pending: existing ? existing.active : 0, // Current Active = Pending
           isFuture: d > new Date()
         });
       }
@@ -226,7 +232,7 @@ function Home() {
     };
 
     updateAndLoadStats();
-  }, [user, activeProjectId, tasks]); 
+  }, [user, activeProjectId, tasks, weekOffset]); 
 
   // Load current project tasks for the ring/stats
   useEffect(() => {
@@ -368,13 +374,27 @@ function Home() {
                   {activeProjectId ? `Dự án: ${projects.find(p => p.id === activeProjectId)?.name}` : 'Chọn dự án'} • <span style={{ color: 'var(--primary)', fontWeight: 600 }}>T2 - CN</span>
                 </p>
               </div>
-              <div className="d-flex gap-3 align-items-center">
-                <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: '#10B981' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span> Xong
-                </span>
-                <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: 'var(--primary)' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }}></span> Tổng
-                </span>
+              <div className="d-flex flex-column align-items-end gap-2">
+                <div className="d-flex gap-2">
+                  <button onClick={() => setWeekOffset(prev => prev - 1)} className="btn btn-sm btn-dark border-0 rounded-circle p-0 d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.05)' }}>
+                    <i className="bi bi-chevron-left"></i>
+                  </button>
+                  <button onClick={() => setWeekOffset(0)} className="btn btn-sm btn-dark border-0 px-2 small fw-bold" style={{ fontSize: '10px', background: 'rgba(255,255,255,0.05)' }}>Tuần này</button>
+                  <button onClick={() => setWeekOffset(prev => prev + 1)} className="btn btn-sm btn-dark border-0 rounded-circle p-0 d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.05)' }}>
+                    <i className="bi bi-chevron-right"></i>
+                  </button>
+                </div>
+                <div className="d-flex gap-3 align-items-center">
+                  <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: 'var(--primary)' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }}></span> Tổng
+                  </span>
+                  <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: '#10B981' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span> Xong
+                  </span>
+                  <span className="small fw-bold d-flex align-items-center gap-1" style={{ color: '#F59E0B' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B', display: 'inline-block' }}></span> Chưa làm
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -391,6 +411,10 @@ function Home() {
                         <stop offset="5%"  stopColor="#10B981" stopOpacity={0.3} />
                         <stop offset="95%" stopColor="#10B981" stopOpacity={0}   />
                       </linearGradient>
+                      <linearGradient id="gPending" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#F59E0B" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}   />
+                      </linearGradient>
                     </defs>
                     <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} dy={8} />
                     <Tooltip
@@ -400,6 +424,7 @@ function Home() {
                     />
                     <Area type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={3} fill="url(#gTotal)" dot={false} activeDot={{ r: 5, fill: 'var(--primary)', stroke: 'white', strokeWidth: 2 }} />
                     <Area type="monotone" dataKey="done"  stroke="#10B981"        strokeWidth={3} fill="url(#gDone)"  dot={false} activeDot={{ r: 5, fill: '#10B981',        stroke: 'white', strokeWidth: 2 }} />
+                    <Area type="monotone" dataKey="pending" stroke="#F59E0B" strokeWidth={3} fill="url(#gPending)" dot={false} activeDot={{ r: 5, fill: '#F59E0B', stroke: 'white', strokeWidth: 2 }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

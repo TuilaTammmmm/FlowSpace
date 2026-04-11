@@ -216,6 +216,47 @@ body, html, #root {
    ═══════════════════════════════════════════════ */
 .transition-all { transition: all 0.2s ease; }
 .tracking-widest { letter-spacing: 0.15em; }
-::-webkit-scrollbar { width: 4px; height: 4px; }
+
+/* Premium Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg-deep); }
-::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* Kanban Refinements */
+.kanban-col {
+  height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(255,255,255,0.015);
+  border: 1px solid var(--border-thin);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.kanban-col:hover {
+  background: rgba(255,255,255,0.025);
+  border-color: var(--border-medium);
+}
+.kanban-col-todo { border-top: 4px solid #94A3B8; }
+.kanban-col-inprogress { border-top: 4px solid #F59E0B; }
+.kanban-col-done { border-top: 4px solid #10B981; }
+
+.kanban-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+  margin: 0 -4px;
+}
+
+.task-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transform: translateZ(0);
+}
+.task-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6);
+}
+.task-card:active {
+  transform: scale(0.98);
+}

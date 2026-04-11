@@ -75,10 +75,11 @@ function Navbar() {
       {/* Logo row */}
       <div style={{
         display: 'flex', alignItems: 'center',
-        padding: collapsed ? '18px 0' : '16px 14px 16px 18px',
-        justifyContent: collapsed ? 'center' : 'space-between',
+        padding: '16px 14px 16px 18px',
+        paddingLeft: collapsed ? '17px' : '18px',
         marginBottom: '12px',
         transition: 'padding 0.25s ease',
+        overflow: 'hidden'
       }}>
         {/* Red icon — click to toggle */}
         <div
@@ -90,21 +91,33 @@ function Navbar() {
           <i className="bi bi-layers-fill text-white" style={{ fontSize: '17px' }}></i>
         </div>
 
-        {!collapsed && (
-          <span className="fw-bold text-white"
-            style={{ letterSpacing: '-0.5px', fontSize: '17px', whiteSpace: 'nowrap', marginLeft: '12px', flex: 1 }}>
-            FlowSpace
-          </span>
-        )}
+        <span className="fw-bold text-white transition-all"
+          style={{ 
+            letterSpacing: '-0.5px', 
+            fontSize: '17px', 
+            whiteSpace: 'nowrap', 
+            marginLeft: '12px', 
+            flex: 1,
+            opacity: collapsed ? 0 : 1,
+            maxWidth: collapsed ? '0' : '200px',
+            overflow: 'hidden',
+            visibility: collapsed ? 'hidden' : 'visible'
+          }}>
+          FlowSpace
+        </span>
 
-        {!collapsed && (
-          <button onClick={toggleCollapse}
-            className="btn p-0 d-flex align-items-center justify-content-center text-secondary"
-            style={{ background: 'none', border: 'none', width: '24px', height: '24px', flexShrink: 0, cursor: 'pointer' }}
-            title="Thu gọn">
-            <i className="bi bi-chevron-left" style={{ fontSize: '12px' }}></i>
-          </button>
-        )}
+        <button onClick={toggleCollapse}
+          className="btn p-0 d-flex align-items-center justify-content-center text-secondary transition-all"
+          style={{ 
+            background: 'none', border: 'none', width: '24px', height: '24px', flexShrink: 0, cursor: 'pointer',
+            opacity: collapsed ? 0 : 1,
+            maxWidth: collapsed ? '0' : '24px',
+            overflow: 'hidden',
+            visibility: collapsed ? 'hidden' : 'visible'
+          }}
+          title="Thu gọn">
+          <i className="bi bi-chevron-left" style={{ fontSize: '12px' }}></i>
+        </button>
       </div>
 
       {/* Main nav */}

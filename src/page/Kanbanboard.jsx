@@ -163,13 +163,16 @@ function KanbanColumn({ status, label, icon, color, accentBg, tasks, onDragOver,
         </button>
       </div>
 
-      {/* Tasks */}
-      <div className="d-flex flex-column gap-3">
+      {/* Tasks Scroll Area */}
+      <div className="kanban-scroll-area d-flex flex-column gap-3">
         {colTasks.length === 0 ? (
-          <div className="d-flex flex-column align-items-center justify-content-center p-4 rounded-4"
-            style={{ border: '2px dashed var(--border-thin)', background: 'rgba(255,255,255,0.01)', minHeight: '120px' }}>
-            <i className="bi bi-inbox fs-2 text-secondary opacity-25 mb-2"></i>
-            <span className="text-secondary opacity-50 fw-medium small">Cột này đang trống</span>
+          <div className="d-flex flex-column align-items-center justify-content-center p-5 rounded-4"
+            style={{ border: '1px dashed var(--border-thin)', background: 'rgba(255,255,255,0.01)', minHeight: '160px' }}>
+            <div className="rounded-circle d-flex align-items-center justify-content-center mb-3"
+              style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.03)', color: 'var(--text-muted)' }}>
+              <i className="bi bi-inbox fs-4 opacity-50"></i>
+            </div>
+            <span className="text-secondary opacity-50 fw-medium small">Khoảng trống sáng tạo</span>
           </div>
         ) : (
           colTasks.map(task => (

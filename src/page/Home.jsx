@@ -164,7 +164,10 @@ function Home() {
     if (user) {
       MOCK_API.getEarliestProjectDate(user.id).then(date => {
         if (date) setEarliestProjectDate(new Date(date));
-        else setEarliestProjectDate(new Date()); // No projects = start now
+        else setEarliestProjectDate(new Date());
+      }).catch(err => {
+        console.error('Failed to load earliest project date:', err);
+        setEarliestProjectDate(new Date());
       });
     }
   }, [user]);
@@ -265,13 +268,19 @@ function Home() {
       setTodoCount(todo);
       setOverdueCount(overdue);
       setPercent(total > 0 ? Math.round((done / total) * 100) : 0);
+    }).catch(err => {
+      console.error('Failed to load tasks:', err);
+      setTasks([]);
     });
   }, [activeProjectId]);
 
   // Load all tasks across all projects for the overdue hero warning
   useEffect(() => {
     if (!user) return;
-    MOCK_API.getAllTasks(user.id).then(setAllTasks);
+    MOCK_API.getAllTasks(user.id).then(setAllTasks).catch(err => {
+      console.error('Failed to load all tasks:', err);
+      setAllTasks([]);
+    });
   }, [user, projects]);
 
   const allOverdueCount = (() => {

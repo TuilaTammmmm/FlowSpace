@@ -22,14 +22,19 @@ export const ProjectProvider = ({ children }) => {
         setToasts(prev => prev.filter(t => t.id !== id));
     };
 
-    const loadProjects = () => {
+    const loadProjects = async () => {
         if (!user) return;
         setLoadingProjects(true);
-        MOCK_API.getProjectsByUserId(user.id).then(data => {
+        try {
+            const data = await MOCK_API.getProjectsByUserId(user.id);
             setProjects(data);
             if (data.length > 0 && !activeProjectId) setActiveProjectId(data[0].id);
+        } catch (err) {
+            console.error('Failed to load projects:', err);
+            setProjects([]);
+        } finally {
             setLoadingProjects(false);
-        });
+        }
     };
 
     useEffect(() => {

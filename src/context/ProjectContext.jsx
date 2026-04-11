@@ -46,10 +46,17 @@ export const ProjectProvider = ({ children }) => {
 
     const addProject = async (name) => {
         if (!user) return;
-        const newProj = await MOCK_API.createProject(user.id, name);
-        setProjects(prev => [...prev, newProj]);
-        setActiveProjectId(newProj.id);
-        showToast('Thành công', `Đã tạo dự án "${name}"`);
+        try {
+            const newProj = await MOCK_API.createProject(user.id, name);
+            setProjects(prev => [...prev, newProj]);
+            setActiveProjectId(newProj.id);
+            showToast('Thành công', `Đã tạo dự án "${name}"`);
+            return newProj;
+        } catch (err) {
+            console.error('Failed to add project:', err);
+            showToast('Lỗi', 'Không thể tạo dự án. Vui lòng thử lại.', 'error');
+            throw err;
+        }
     };
 
     const renameProject = async (id, newName) => {

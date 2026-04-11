@@ -76,15 +76,20 @@ const sb = {
     },
 
     createProject: async (userId, name) => {
-        const { data, error } = await supabase.from('projects').insert({ user_id: userId, name }).select().single();
-        if (error) throw error;
-        return {
-            id: data.id,
-            userId: data.user_id,
-            name: data.name,
-            isMuted: data.is_muted,
-            createdAt: data.created_at // Crucial for Home.jsx week anchoring
-        };
+        try {
+            const { data, error } = await supabase.from('projects').insert({ user_id: userId, name }).select().single();
+            if (error) throw error;
+            return { 
+                id: data.id, 
+                userId: data.user_id, 
+                name: data.name, 
+                isMuted: data.is_muted,
+                createdAt: data.created_at || new Date().toISOString()
+            };
+        } catch (err) {
+            console.error("API createProject Error:", err);
+            throw err;
+        }
     },
 
     updateProject: async (id, name) => {

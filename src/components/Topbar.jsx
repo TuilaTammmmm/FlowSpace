@@ -219,7 +219,17 @@ function Topbar() {
                 </button>
               ))}
               <div style={{ borderTop: '1px solid var(--border-thin)' }}>
-                <button onClick={logout}
+                <button onClick={async () => {
+                    setShowUserMenu(false); // Đóng menu ngay lập tức
+                    try {
+                      await logout();
+                      navigate('/login');
+                    } catch (err) {
+                      console.error("Logout failed:", err);
+                      // Vẫn reset state local để thoát kẹt
+                      window.location.href = '/login';
+                    }
+                  }}
                   className="btn w-100 text-start d-flex align-items-center gap-3 px-4 py-2"
                   style={{ background: 'none', border: 'none', fontSize: '13px', color: '#ef4444', borderRadius: 0 }}
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.06)'}

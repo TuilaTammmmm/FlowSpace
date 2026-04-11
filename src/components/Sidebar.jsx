@@ -19,12 +19,12 @@ function Sidebar() {
 
   const w = collapsed ? '68px' : '236px';
 
-  // nav-link: dùng padding-left thay vì border-left để tránh nảy layout
+  // nav-link: dùng padding cố định cho icon để không bị nảy khi co/mở
   const navLinkStyle = (isActive) => ({
-    padding: collapsed ? '11px 0' : '11px 18px',
-    paddingLeft: collapsed ? '0' : isActive ? '15px' : '18px', // bù 3px border
-    justifyContent: collapsed ? 'center' : 'flex-start',
-    transition: 'background 0.15s ease, color 0.15s ease',
+    padding: '11px 0',
+    paddingLeft: collapsed ? '22px' : isActive ? '15px' : '18px', 
+    justifyContent: 'flex-start', // Luôn giữ flex-start để icon không bị nảy ra giữa
+    transition: 'all 0.2s ease',
     borderLeft: isActive && !collapsed ? '3px solid var(--primary)' : '3px solid transparent',
     borderRadius: 0,
     display: 'flex',

@@ -29,79 +29,88 @@ function Register() {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center px-3" style={{ background: '#0f172a' }}>
-      <div className="card-premium p-5 shadow-premium w-100" style={{ maxWidth: '440px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.05)' }}>
+    <div className="min-vh-100 d-flex align-items-center justify-content-center px-3 auth-aurora-bg">
+      <div className="glass-card p-5 w-100 page-transition" style={{ maxWidth: '460px', zIndex: 1, position: 'relative' }}>
         
-        {/* Logo */}
+        {/* Logo Section */}
         <div className="text-center mb-5">
-           <div className="d-inline-flex align-items-center justify-content-center rounded-4 mb-4 shadow-lg" 
-                style={{ width: '70px', height: '70px', background: 'var(--primary)' }}>
-             <i className="bi bi-layers-fill text-white fs-1"></i>
+           <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-lg" 
+                style={{ width: '64px', height: '64px', background: 'var(--primary)', boxShadow: '0 0 20px var(--primary-glow)' }}>
+             <i className="bi bi-layers-fill text-white fs-2"></i>
            </div>
-           <h1 className="fw-bold text-white mb-1" style={{ fontSize: '32px', letterSpacing: '-0.5px' }}>Gia nhập FlowSpace</h1>
-           <p className="text-secondary small tracking-widest text-uppercase fw-medium" style={{ opacity: 0.7 }}>Khởi tạo không gian làm việc của bạn</p>
+           <h2 className="fw-bold text-white mb-0" style={{ fontSize: '28px', letterSpacing: '-1px' }}>Gia nhập FlowSpace</h2>
+           <p className="text-secondary opacity-50 small text-uppercase tracking-widest mt-1" style={{ fontSize: '10px' }}>Kiến tạo không gian của riêng bạn</p>
         </div>
 
         {error && (
-          <div className="alert alert-danger py-2 px-3 mb-4 rounded-3 border-0 bg-danger bg-opacity-10 text-danger small fw-bold d-flex align-items-center gap-2">
+          <div className="alert alert-danger py-2 px-3 mb-4 rounded-3 border-0 bg-danger bg-opacity-10 text-danger small fw-bold d-flex align-items-center gap-2 animate__animated animate__shakeX">
             <i className="bi bi-exclamation-circle-fill"></i> {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="text-muted fw-bold text-uppercase mb-2 d-block" style={{ fontSize: '10px', letterSpacing: '1.2px' }}>Họ và tên</label>
-            <input 
-              type="text" 
-              className="form-control bg-dark border-0 text-white rounded-3 py-3 px-4 shadow-none"
-              style={{ background: 'rgba(0,0,0,0.2) !important', border: '1px solid rgba(255,255,255,0.05) !important' }}
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Nguyễn Văn A"
-              required
-            />
+            <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Họ và tên</label>
+            <div className="position-relative">
+              <i className="bi bi-person position-absolute top-50 translate-middle-y ms-3 text-muted" style={{ zIndex: 5 }}></i>
+              <input 
+                type="text" 
+                className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Nguyễn Văn A"
+                required
+              />
+            </div>
           </div>
 
           <div className="mb-3">
-            <label className="text-muted fw-bold text-uppercase mb-2 d-block" style={{ fontSize: '10px', letterSpacing: '1.2px' }}>Email cá nhân</label>
-            <input 
-              type="email" 
-              className="form-control bg-dark border-0 text-white rounded-3 py-3 px-4 shadow-none"
-              style={{ background: 'rgba(0,0,0,0.2) !important', border: '1px solid rgba(255,255,255,0.05) !important' }}
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="example@mail.com"
-              required
-            />
+            <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Địa chỉ Email</label>
+            <div className="position-relative">
+              <i className="bi bi-envelope position-absolute top-50 translate-middle-y ms-3 text-muted" style={{ zIndex: 5 }}></i>
+              <input 
+                type="email" 
+                className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="email@example.com"
+                required
+              />
+            </div>
           </div>
 
           <div className="mb-5">
-            <label className="text-muted fw-bold text-uppercase mb-2 d-block" style={{ fontSize: '10px', letterSpacing: '1.2px' }}>Mật khẩu bảo mật</label>
-            <input 
-              type="password" 
-              className="form-control bg-dark border-0 text-white rounded-3 py-3 px-4 shadow-none"
-              style={{ background: 'rgba(0,0,0,0.2) !important', border: '1px solid rgba(255,255,255,0.05) !important' }}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Mật khẩu bảo mật</label>
+            <div className="position-relative">
+              <i className="bi bi-shield-lock position-absolute top-50 translate-middle-y ms-3 text-muted" style={{ zIndex: 5 }}></i>
+              <input 
+                type="password" 
+                className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+            </div>
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className="btn btn-primary-red w-100 py-3 fw-bold rounded-3 shadow-lg mb-3"
-            style={{ fontSize: '15px' }}
+            className="btn btn-primary-red w-100 py-3 fw-bold rounded-4 shadow-lg mb-4 transition-all"
+            style={{ fontSize: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}
           >
-            <i className={`bi ${loading ? 'bi-hourglass-split' : 'bi-person-plus-fill'} me-2`}></i>
-            {loading ? 'Đang tạo tài khoản...' : 'Đăng ký tham gia'}
+            {loading ? (
+              <span className="spinner-border spinner-border-sm me-2"></span>
+            ) : (
+              <i className="bi bi-person-plus-fill me-2"></i>
+            )}
+            {loading ? 'Đang khởi tạo...' : 'Đăng ký ngay'}
           </button>
 
-
           <div className="text-center">
-            <Link to="/login" className="text-decoration-none fw-bold" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>
-              ĐÃ CÓ TÀI KHOẢN? <span style={{ color: 'var(--primary)' }}>ĐĂNG NHẬP NGAY →</span>
+            <Link to="/login" className="text-secondary text-decoration-none small transition-all hover-white">
+              Đã có tài khoản? <span className="text-white fw-bold">Đăng nhập ngay →</span>
             </Link>
           </div>
         </form>

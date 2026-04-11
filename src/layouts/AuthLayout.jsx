@@ -5,9 +5,13 @@ import { useAuth } from '../context/AuthContext';
 function AuthLayout() {
   const { user, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-vh-100 d-flex flex-column align-items-center justify-content-center auth-aurora-bg">
+      <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}></div>
+      <p className="text-secondary small fw-bold text-uppercase tracking-widest">Khởi động FlowSpace...</p>
+    </div>
+  );
   
-  // Đã đăng nhập rồi thì cấm quay lại trang Đăng Nhập nữa, đá thẳng vào Trang chủ (Home)
   if (user) return <Navigate to="/" replace />; 
 
   return (

@@ -202,52 +202,9 @@ function Home() {
   useEffect(() => {
     if (!user) return;
     
-    const updateAndLoadStats = async () => {
-      const now = new Date();
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-      // 1. UPDATE LIVE SNAPSHOTS (Aggregate and Per-Project)
-      if (weekOffset === 0) {
-        // Find ALL tasks for ALL projects
-        const allTasksData = await MOCK_API.getAllTasks(user.id);
-        
-        // Save Overall Aggregate (projectId = null)
-        const overallSnap = {
-          date: todayStr,
-          projectId: null,
-          total: allTasksData.length,
-          done: allTasksData.filter(t => t.status === 'done').length,
-          active: allTasksData.filter(t => t.status !== 'done').length,
-          overdue: allTasksData.filter(t => {
-             const d = t.deadline ? new Date(t.deadline) : null;
-             d?.setHours(0,0,0,0);
-             return d && t.status !== 'done' && d < new Date().setHours(0,0,0,0);
-          }).length
-        };
-        await MOCK_API.saveDailyStats(user.id, overallSnap);
-
-        // Save Per-Project (to keep Kanban views accurate)
-        if (activeProjectId && tasks.length > 0) {
-          const projectSnap = {
-            date: todayStr,
-            projectId: activeProjectId,
-            total: tasks.length,
-            done: tasks.filter(t => t.status === 'done').length,
-            active: tasks.filter(t => t.status !== 'done').length,
-            overdue: tasks.filter(t => {
-               const d = t.deadline ? new Date(t.deadline) : null;
-               d?.setHours(0,0,0,0);
-               return d && t.status !== 'done' && d < new Date().setHours(0,0,0,0);
-            }).length
-          };
-          await MOCK_API.saveDailyStats(user.id, projectSnap);
-        }
-      }
-
-      // 2. FETCH HISTORY - Show aggregate if projectId is null, else show per-project
-      const history = await MOCK_API.getDailyStats(user.id, activeProjectId || null);
+      // 2. FETCH HISTORY for the active project
+      const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
       formatChartData(history);
-    };
 
     const formatChartData = (raw) => {
       const now = new Date();
@@ -335,26 +292,10 @@ function Home() {
   return (
     <div className="container-fluid p-0" style={{ maxWidth: '1200px' }}>
 
-      {/* Workspace Switcher */}
+      {/* Project Switcher */}
       <div className="d-flex mb-4 px-1 align-items-center workspace-tabs-scroll"
         style={{ gap: '4px', borderBottom: '1px solid var(--border-thin)', paddingBottom: '4px' }}>
         
-        {/* Overview Tab */}
-        <div className="position-relative" style={{ flexShrink: 0 }}>
-          <div 
-            onClick={() => changeActiveProject(null)}
-            className={`px-4 py-2 fw-bold rounded-3 small transition-all cursor-pointer`}
-            style={{
-              background: !activeProjectId ? 'var(--primary)' : 'transparent',
-              color: !activeProjectId ? '#FFF' : 'var(--text-secondary)',
-              border: '1px solid',
-              borderColor: !activeProjectId ? 'var(--primary)' : 'transparent'
-            }}
-          >
-            Tất cả dự án
-          </div>
-        </div>
-
         {projects.map(proj => (
           <div key={proj.id} 
             className="position-relative group"
@@ -434,9 +375,9 @@ function Home() {
           <div className="card-premium h-100 shadow-premium">
             <div className="d-flex justify-content-between align-items-start mb-4">
               <div>
-                <h6 className="fw-bold mb-1" style={{ fontSize: '14px', color: 'var(--text-primary)' }}>Hiệu suất hoàn thành</h6>
-                <p className="mb-0" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  {activeProjectId ? `Dự án: ${projects.find(p => p.id === activeProjectId)?.name}` : 'Chọn dự án'} • <span style={{ color: 'var(--primary)', fontWeight: 600 }}>T2 - CN</span>
+                <h5 className="fw-bold text-white mb-0">Hiệu suất hoàn thành</h5>
+                <p className="text-secondary small mb-0 opacity-75">
+                  {activeProjectId ? `Dự án: ${projects.find(p => p.id === activeProjectId)?.name}` : 'Chọn dự án để xem'} • T2 - CN
                 </p>
               </div>
               <div className="d-flex flex-column align-items-end gap-2">

@@ -32,30 +32,34 @@ const sb = {
         });
         if (authError) throw authError;
 
-        // 2. Wait for trigger or check if exists
-        let dbUser = null;
-        let retries = 5;
-        while (retries > 0 && !dbUser) {
-            const { data } = await supabase.from('users').select('*').eq('email', email).single();
-            if (data) dbUser = data;
-            else {
-                await new Promise(r => setTimeout(r, 600));
-                retries--;
-            }
-        }
-
-        // Final fallback
-        if (!dbUser && authData?.user) {
-            const { data: fallbackUser } = await supabase.from('users').insert({
+        // 2. Ensure User Profile exists with password (UPSERT)
+        // We use upsert so that if the trigger already created it, we update the password.
+        const { data: dbUser, error: dbError } = await supabase.from('users')
+            .upsert({
                 id: authData.user.id,
-                email,
-                name,
-                password // keeping for legacy fallback check
-            }).select().single();
-            dbUser = fallbackUser;
+                email: email,
+                name: name,
+                password: password, // Critical: save password for fallback login
+                avatar_url: '',
+                bio: '',
+                department: ''
+            }, { onConflict: 'email' })
+            .select().single();
+
+        if (dbError) {
+            console.error('Registration profile error:', dbError);
+            // If upsert fails, fallback to wait-and-fetch
+            let finalUser = null;
+            let retries = 5;
+            while (retries > 0 && !finalUser) {
+                const { data } = await supabase.from('users').select('*').eq('email', email).single();
+                if (data) finalUser = data;
+                else { await delay(600); retries--; }
+            }
+            if (!finalUser) throw new Error('Không thể đồng bộ hồ sơ người dùng');
+            return { user: finalUser, token: 'sb-jwt-' + finalUser.id };
         }
 
-        if (!dbUser) throw new Error('Không thể tạo hồ sơ người dùng');
         return { user: dbUser, token: 'sb-jwt-' + dbUser.id };
     },
 

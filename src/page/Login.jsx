@@ -62,10 +62,9 @@ function Login() {
           <div className="mb-4">
             <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Địa chỉ Email</label>
             <div className="position-relative d-flex align-items-center">
-              <i className="bi bi-envelope position-absolute ms-3 text-muted" style={{ zIndex: 5, fontSize: '18px' }}></i>
               <input
                 type="email"
-                className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
+                className="form-control auth-input py-3 px-4 rounded-4 shadow-none"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="email@example.com"
@@ -77,10 +76,9 @@ function Login() {
           <div className="mb-5">
             <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Mật khẩu</label>
             <div className="position-relative d-flex align-items-center">
-              <i className="bi bi-shield-lock position-absolute ms-3 text-muted" style={{ zIndex: 5, fontSize: '18px' }}></i>
               <input
                 type="password"
-                className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
+                className="form-control auth-input py-3 px-4 rounded-4 shadow-none"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"

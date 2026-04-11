@@ -4,10 +4,137 @@ import { useProjects } from '../context/ProjectContext';
 import { MOCK_API } from '../services/api';
 import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip } from 'recharts';
 
+/* ── Add Project Modal ── */
+function AddProjectModal({ onAdd, onClose }) {
+  const [name, setName] = useState('');
+  return (
+    <div className="position-fixed d-flex align-items-center justify-content-center"
+      style={{ inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 2000, backdropFilter: 'blur(4px)' }}
+      onClick={onClose}>
+      <div className="card-premium p-5 shadow-premium" style={{ width: '400px' }} onClick={e => e.stopPropagation()}>
+        <h5 className="fw-bold text-white mb-3">Tạo dự án mới</h5>
+        <input autoFocus className="form-control mb-4" placeholder="Tên dự án..." value={name} onChange={e => setName(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && name.trim()) { onAdd(name.trim()); onClose(); } }} />
+        <div className="d-flex gap-3 justify-content-end">
+          <button className="btn text-secondary fw-bold" onClick={onClose}>Hủy</button>
+          <button className="btn btn-primary-red fw-bold px-4" onClick={() => { if (name.trim()) { onAdd(name.trim()); onClose(); } }}>Bắt đầu ngay</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Project Rename/Delete confirmation ── */
+function ProjectActionsModal({ project, onRename, onDelete, onClose }) {
+  const [mode, setMode]       = useState('menu'); // 'menu' | 'rename' | 'delete'
+  const [newName, setNewName] = useState(project?.name || '');
+  const [deleteInput, setDeleteInput] = useState('');
+
+  useEffect(() => { setNewName(project?.name || ''); setDeleteInput(''); setMode('menu'); }, [project]);
+
+  if (!project) return null;
+  const expectedDelete = `DELETE/${project.name}`;
+
+  return (
+    <div
+      className="position-fixed d-flex align-items-center justify-content-center"
+      style={{ inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 2000, backdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="shadow-premium"
+        style={{ background: 'var(--surface-1)', border: '1px solid var(--border-thin)', borderRadius: '16px', width: '420px', overflow: 'hidden' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="d-flex justify-content-between align-items-center px-5 py-4 border-bottom" style={{ borderColor: 'var(--border-thin)' }}>
+          <span className="fw-bold text-white" style={{ fontSize: '13px' }}>Quản lý dự án: {project.name}</span>
+          <button className="btn p-0 text-secondary" style={{ background: 'none', border: 'none', fontSize: '18px' }} onClick={onClose}>
+            <i className="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div className="p-5">
+          {mode === 'menu' && (
+            <div className="d-flex flex-column gap-3">
+              <button onClick={() => setMode('rename')}
+                className="btn fw-bold w-100 py-3 d-flex align-items-center gap-3 rounded-3"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-thin)', color: 'var(--text-primary)' }}>
+                <i className="bi bi-pencil-fill" style={{ color: 'var(--primary)' }}></i> Đổi tên dự án
+              </button>
+              <button onClick={() => {
+                  MOCK_API.toggleMuteProject(project.id, !project.isMuted).then(() => window.location.reload());
+                }}
+                className="btn fw-bold w-100 py-3 d-flex align-items-center gap-3 rounded-3"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-thin)', color: 'var(--text-primary)' }}>
+                <i className={`bi ${project.isMuted ? 'bi-bell-fill' : 'bi-bell-slash-fill'}`} style={{ color: 'var(--warning)' }}></i> 
+                {project.isMuted ? 'Bật thông báo' : 'Tắt thông báo'}
+              </button>
+              <button onClick={() => setMode('delete')}
+                className="btn fw-bold w-100 py-3 d-flex align-items-center gap-3 rounded-3"
+                style={{ background: 'rgba(255,61,61,0.04)', border: '1px solid rgba(255,61,61,0.2)', color: '#ef4444' }}>
+                <i className="bi bi-trash-fill"></i> Xóa dự án
+              </button>
+            </div>
+          )}
+
+          {mode === 'rename' && (
+            <div>
+              <p className="text-secondary small mb-3">Nhập tên mới cho dự án:</p>
+              <input
+                autoFocus
+                className="form-control mb-4"
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+              />
+              <div className="d-flex gap-3 justify-content-end">
+                <button className="btn text-secondary fw-bold" onClick={() => setMode('menu')}>Quay lại</button>
+                <button className="btn btn-primary-red fw-bold px-4"
+                  onClick={() => { if (newName.trim()) { onRename(project.id, newName.trim()); onClose(); } }}>
+                  Lưu tên mới
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mode === 'delete' && (
+            <div>
+              <div className="p-3 rounded-3 mb-4" style={{ background: 'rgba(255,61,61,0.06)', border: '1px solid rgba(255,61,61,0.2)' }}>
+                <p className="text-secondary small mb-2">
+                  Hành động này sẽ xóa vĩnh viễn dự án và <strong className="text-white">tất cả task</strong> bên trong. Không thể hoàn tác!
+                </p>
+                <p className="mb-0 small" style={{ color: '#ef4444', fontWeight: 600 }}>
+                  Nhập: <code style={{ background: 'rgba(255,61,61,0.15)', padding: '2px 6px', borderRadius: '4px', color: '#ef4444' }}>{expectedDelete}</code> để xác nhận
+                </p>
+              </div>
+              <input
+                autoFocus
+                className="form-control mb-4"
+                placeholder={expectedDelete}
+                value={deleteInput}
+                onChange={e => setDeleteInput(e.target.value)}
+              />
+              <div className="d-flex gap-3 justify-content-end">
+                <button className="btn text-secondary fw-bold" onClick={() => setMode('menu')}>Quay lại</button>
+                <button
+                  className="btn fw-bold px-4"
+                  style={{ background: '#dc3545', color: 'white', border: 'none', borderRadius: '10px', opacity: deleteInput === expectedDelete ? 1 : 0.4 }}
+                  disabled={deleteInput !== expectedDelete}
+                  onClick={() => { onDelete(project.id); onClose(); }}>
+                  <i className="bi bi-trash me-2"></i> Xóa vĩnh viễn
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Stat card ── */
 const StatCard = ({ label, value, icon, color, bg }) => (
   <div className="flex-fill text-center rounded-4 p-4 d-flex flex-column align-items-center justify-content-center gap-2"
-    style={{ background: bg, border: `1px solid ${color}22`, minWidth: 0 }}>
+    style={{ background: bg, border: `1px solid ${color}22`, minWidth: 0, transition: 'all 0.3s ease' }}>
     <i className={`${icon} fs-4`} style={{ color }}></i>
     <h3 className="fw-bold mb-0" style={{ color, lineHeight: 1 }}>{value}</h3>
     <span className="fw-bold text-uppercase" style={{ fontSize: '10px', color: color + 'aa', letterSpacing: '1px' }}>{label}</span>
@@ -16,11 +143,13 @@ const StatCard = ({ label, value, icon, color, bg }) => (
 
 function Home() {
   const { user } = useAuth();
-  const { projects, activeProjectId, changeActiveProject, addProject } = useProjects();
+  const { projects, activeProjectId, changeActiveProject, addProject, deleteProject, renameProject } = useProjects();
 
   // Per-project stats
   const [tasks, setTasks]             = useState([]); // tasks of active project
   const [allTasks, setAllTasks]       = useState([]); // tasks of ALL projects
+  const [projectAction, setProjectAction] = useState(null);
+  const [showAddProject, setShowAddProject] = useState(false);
 
   // Derived
   const [doneCount, setDoneCount]           = useState(0);
@@ -37,44 +166,36 @@ function Home() {
     return 'Chào buổi tối';
   };
 
-  // Load stats history for the chart
+  // Load stats history for the chart + Live Update today's stats
   useEffect(() => {
     if (!user) return;
     
-    const loadHistory = async () => {
-      // 1. Fetch historical stats from DB
-      const history = await MOCK_API.getDailyStats(user.id);
-      
-      // 2. Local check: Did we save stats for today yet?
+    const updateAndLoadStats = async () => {
+      // 1. Compute current day snapshot LIVE from allTasks
       const todayStr = new Date().toISOString().split('T')[0];
-      const hasToday = history.some(s => s.date === todayStr);
-      
-      if (!hasToday || history.length === 0) {
-        // Fetch all tasks to compute current snapshot
-        const all = await MOCK_API.getAllTasks(user.id);
-        const todaySnap = {
-          date: todayStr,
-          total: all.length,
-          done: all.filter(t => t.status === 'done').length,
-          active: all.filter(t => t.status !== 'done').length,
-          overdue: all.filter(t => {
-             const d = t.deadline ? new Date(t.deadline) : null;
-             d?.setHours(0,0,0,0);
-             return d && t.status !== 'done' && d < new Date().setHours(0,0,0,0);
-          }).length
-        };
+      const todaySnap = {
+        date: todayStr,
+        total: allTasks.length,
+        done: allTasks.filter(t => t.status === 'done').length,
+        active: allTasks.filter(t => t.status !== 'done').length,
+        overdue: allTasks.filter(t => {
+           const d = t.deadline ? new Date(t.deadline) : null;
+           d?.setHours(0,0,0,0);
+           return d && t.status !== 'done' && d < new Date().setHours(0,0,0,0);
+        }).length
+      };
+
+      // 2. Only save if we actually have tasks (avoid blanking stats on initial load if sync is slow)
+      if (allTasks.length > 0) {
         await MOCK_API.saveDailyStats(user.id, todaySnap);
-        
-        // Refresh chart data
-        const updatedHistory = await MOCK_API.getDailyStats(user.id);
-        formatChartData(updatedHistory);
-      } else {
-        formatChartData(history);
       }
+
+      // 3. Fetch full history for the chart
+      const history = await MOCK_API.getDailyStats(user.id);
+      formatChartData(history);
     };
 
     const formatChartData = (raw) => {
-      // Format the last 7-30 days for Recharts
       const data = raw.slice(-7).map(s => ({
         name: new Date(s.date).toLocaleDateString('vi-VN', { weekday: 'short' }),
         fullDate: s.date,
@@ -84,8 +205,8 @@ function Home() {
       setChartData(data);
     };
 
-    loadHistory();
-  }, [user, projects]);
+    updateAndLoadStats();
+  }, [user, allTasks]); // Runs whenever tasks change
 
   // Load current project tasks for the ring/stats
   useEffect(() => {
@@ -121,10 +242,21 @@ function Home() {
     return allTasks.filter(t => t.deadline && t.status !== 'done' && new Date(t.deadline) < today).length;
   })();
 
-  const handleAddProject = () => {
-    const name = prompt('Nhập tên dự án mới:');
-    if (name && name.trim()) addProject(name.trim());
-  };
+  const handleAddProject = () => setShowAddProject(true);
+
+  if (projects.length === 0) return (
+    <div className="container-fluid p-0 d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '70vh' }}>
+      <div className="text-center p-5 rounded-5 shadow-premium" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-thin)', maxWidth: '400px' }}>
+        <i className="bi bi-folder-plus display-1 text-primary mb-4 d-block opacity-25"></i>
+        <h4 className="fw-bold text-white mb-3">Chưa có dự án nào</h4>
+        <p className="text-secondary small mb-5">Khởi tạo không gian làm việc đầu tiên của bạn để bắt đầu quản lý nhiệm vụ hiệu quả hơn.</p>
+        <button onClick={handleAddProject} className="btn btn-primary-red px-5 py-3 fw-bold rounded-3 shadow-lg w-100">
+           Tạo dự án đầu tiên ngay
+        </button>
+      </div>
+      {showAddProject && <AddProjectModal onAdd={addProject} onClose={() => setShowAddProject(false)} />}
+    </div>
+  );
 
   return (
     <div className="container-fluid p-0" style={{ maxWidth: '1200px' }}>
@@ -155,10 +287,7 @@ function Home() {
                 )}
                 <div onClick={(e) => { 
                   e.stopPropagation(); 
-                  const newName = prompt('Đổi tên dự án:', proj.name);
-                  if (newName && newName.trim()) {
-                    MOCK_API.updateProject(proj.id, newName.trim()).then(() => window.location.reload());
-                  }
+                  setProjectAction(proj);
                 }} className="hover-scale">
                   <i className="bi bi-gear-fill" style={{ fontSize: '10px', opacity: 0.6 }}></i>
                 </div>
@@ -309,6 +438,20 @@ function Home() {
         </div>
       </div>
 
+      {/* Project manage modal */}
+      {projectAction && (
+        <ProjectActionsModal
+          project={projectAction}
+          onRename={renameProject}
+          onDelete={deleteProject}
+          onClose={() => setProjectAction(null)}
+        />
+      )}
+
+      {/* Add Project Modal */}
+      {showAddProject && (
+        <AddProjectModal onAdd={addProject} onClose={() => setShowAddProject(false)} />
+      )}
     </div>
   );
 }

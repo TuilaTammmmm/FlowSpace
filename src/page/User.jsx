@@ -151,9 +151,11 @@ function User() {
                 ) : (
                   user?.name?.substring(0, 2).toUpperCase() || 'DT'
                 )}
-                <div className="position-absolute bottom-0 start-0 end-0 py-1 bg-dark bg-opacity-75 text-center" style={{ fontSize: '9px', opacity: 0.8 }}>
-                  Sửa ảnh
-                </div>
+                {editMode && (
+                  <div className="position-absolute bottom-0 start-0 end-0 py-1 bg-dark bg-opacity-75 text-center" style={{ fontSize: '9px', opacity: 0.8 }}>
+                    Sửa ảnh
+                  </div>
+                )}
               </div>
               <input 
                 id="avatarInput" 

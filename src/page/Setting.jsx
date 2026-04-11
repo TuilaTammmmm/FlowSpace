@@ -30,12 +30,10 @@ function Setting() {
   };
 
   const handleClearData = () => {
-    if (window.confirm('Cảnh báo: Hành động này sẽ xóa toàn bộ dữ liệu. Bạn có chắc chắn?')) {
-      MOCK_API.clearData();
-      localStorage.removeItem('flowspace_color');
-      localStorage.removeItem('flowspace_user');
-      logout();
-      window.location.href = '/login';
+    if (window.confirm('Cảnh báo: Hành động này sẽ xóa toàn bộ dự án và nhiệm vụ của bạn. Bạn có chắc chắn?')) {
+      MOCK_API.clearData(user?.id).then(() => {
+        window.location.reload();
+      });
     }
   };
 
@@ -91,13 +89,7 @@ function Setting() {
           {/* ---- TAB GIAO DIỆN ---- */}
           {activeTab === 'interface' && (
             <>
-              {/* Info */}
-              <div className="mb-2">
-                 <h6 className="fw-bold text-white mb-1">Giao diện Premium Dark</h6>
-                 <p className="text-secondary small mb-0">Ứng dụng đã được tối ưu hóa cho chế độ tối chuyên nghiệp.</p>
-              </div>
-
-              <hr style={{ borderColor: 'var(--border-thin)', margin: '0' }} />
+              {/* Accent Color */}
 
               {/* Accent Color */}
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-4">

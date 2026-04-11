@@ -15,8 +15,8 @@
   --primary-glow:  rgba(255, 61, 61, 0.35);
 
   --text-primary:   #FFFFFF;
-  --text-secondary: #94A3B8;
-  --text-muted:     #64748B;
+  --text-secondary: #CBD5E1; /* Boosted for better contrast */
+  --text-muted:     #94A3B8; /* Boosted for better contrast */
 
   --border-thin:   rgba(255, 255, 255, 0.08);
   --border-medium: rgba(255, 255, 255, 0.12);
@@ -118,6 +118,7 @@ body, html, #root {
   box-shadow: 0 0 0 4px var(--primary-glow) !important;
   outline: none;
 }
+.form-control::placeholder { color: var(--text-muted) !important; opacity: 0.6; }
 .form-select option { background-color: #1D2433; color: #FFFFFF; }
 
 /* ═══════════════════════════════════════════════

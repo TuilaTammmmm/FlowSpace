@@ -12,6 +12,14 @@ function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const handleGoogleLogin = async () => {
+    try {
+      await MOCK_API.signInWithGoogle();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -89,11 +97,20 @@ function Register() {
           <button 
             type="submit" 
             disabled={loading}
-            className="btn btn-primary-red w-100 py-3 fw-bold rounded-3 shadow-lg mb-4"
+            className="btn btn-primary-red w-100 py-3 fw-bold rounded-3 shadow-lg mb-3"
             style={{ fontSize: '15px' }}
           >
             <i className={`bi ${loading ? 'bi-hourglass-split' : 'bi-person-plus-fill'} me-2`}></i>
             {loading ? 'Đang tạo tài khoản...' : 'Đăng ký tham gia'}
+          </button>
+
+          <button 
+            type="button"
+            onClick={handleGoogleLogin}
+            className="btn w-100 py-3 fw-bold rounded-3 mb-4 d-flex align-items-center justify-content-center gap-2"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-thin)', color: 'white', fontSize: '15px' }}
+          >
+            <i className="bi bi-google text-primary"></i> Đăng ký bằng Google
           </button>
 
           <div className="text-center">

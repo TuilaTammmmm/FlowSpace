@@ -41,6 +41,14 @@ function ProjectActionsModal({ project, onRename, onDelete, onClose }) {
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-thin)', color: 'var(--text-primary)' }}>
                 <i className="bi bi-pencil-fill" style={{ color: 'var(--primary)' }}></i> Đổi tên dự án
               </button>
+              <button onClick={() => {
+                  MOCK_API.toggleMuteProject(project.id, !project.isMuted).then(() => window.location.reload());
+                }}
+                className="btn fw-bold w-100 py-3 d-flex align-items-center gap-3 rounded-3"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-thin)', color: 'var(--text-primary)' }}>
+                <i className={`bi ${project.isMuted ? 'bi-bell-fill' : 'bi-bell-slash-fill'}`} style={{ color: 'var(--warning)' }}></i> 
+                {project.isMuted ? 'Bật thông báo' : 'Tắt thông báo'}
+              </button>
               <button onClick={() => setMode('delete')}
                 className="btn fw-bold w-100 py-3 d-flex align-items-center gap-3 rounded-3"
                 style={{ background: 'rgba(255,61,61,0.04)', border: '1px solid rgba(255,61,61,0.2)', color: '#ef4444' }}>
@@ -98,6 +106,26 @@ function ProjectActionsModal({ project, onRename, onDelete, onClose }) {
               </div>
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Add Project Modal ── */
+function AddProjectModal({ onAdd, onClose }) {
+  const [name, setName] = useState('');
+  return (
+    <div className="position-fixed d-flex align-items-center justify-content-center"
+      style={{ inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 2000, backdropFilter: 'blur(4px)' }}
+      onClick={onClose}>
+      <div className="card-premium p-5 shadow-premium" style={{ width: '400px' }} onClick={e => e.stopPropagation()}>
+        <h5 className="fw-bold text-white mb-3">Tạo dự án mới</h5>
+        <input autoFocus className="form-control mb-4" placeholder="Tên dự án..." value={name} onChange={e => setName(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && name.trim()) { onAdd(name.trim()); onClose(); } }} />
+        <div className="d-flex gap-3 justify-content-end">
+          <button className="btn text-secondary fw-bold" onClick={onClose}>Hủy</button>
+          <button className="btn btn-primary-red fw-bold px-4" onClick={() => { if (name.trim()) { onAdd(name.trim()); onClose(); } }}>Bắt đầu ngay</button>
         </div>
       </div>
     </div>
@@ -165,11 +193,9 @@ function Kanbanboard() {
   const { projects, activeProjectId, changeActiveProject, renameProject, deleteProject, addProject, showToast } = useProjects();
   const [tasks, setTasks]     = useState([]);
   const [projectAction, setProjectAction] = useState(null);
+  const [showAddProject, setShowAddProject] = useState(false);
 
-  const handleCreateFirst = () => {
-    const name = prompt('Nhập tên dự án mới:');
-    if (name && name.trim()) addProject(name.trim());
-  };
+  const handleCreateFirst = () => setShowAddProject(true);
 
   useEffect(() => {
     if (activeProjectId) {
@@ -215,6 +241,7 @@ function Kanbanboard() {
           <i className="bi bi-plus-lg me-2"></i> Tạo dự án mới
         </button>
       </div>
+      {showAddProject && <AddProjectModal onAdd={addProject} onClose={() => setShowAddProject(false)} />}
     </div>
   );
 
@@ -292,6 +319,11 @@ function Kanbanboard() {
           onDelete={deleteProject}
           onClose={() => setProjectAction(null)}
         />
+      )}
+
+      {/* Add Project Modal */}
+      {showAddProject && (
+        <AddProjectModal onAdd={addProject} onClose={() => setShowAddProject(false)} />
       )}
     </div>
   );

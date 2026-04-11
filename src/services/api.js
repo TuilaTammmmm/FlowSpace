@@ -25,6 +25,14 @@ const sb = {
         return { user: data, token: 'sb-jwt-' + data.id };
     },
 
+    signInWithGoogle: async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin }
+        });
+        if (error) throw error;
+    },
+
     updateUserProfile: async (userId, updateData) => {
         const { data, error } = await supabase.from('users').update(updateData).eq('id', userId).select().single();
         if (error) throw error;
@@ -149,6 +157,18 @@ const sb = {
             .select().single();
         if (error) throw error;
         return data;
+    },
+
+    resetUserData: async (userId) => {
+        // Delete tasks, projects, stats in order
+        await supabase.from('daily_stats').delete().eq('user_id', userId);
+        const { data: projs } = await supabase.from('projects').select('id').eq('user_id', userId);
+        const projIds = projs.map(p => p.id);
+        if (projIds.length > 0) {
+            await supabase.from('tasks').delete().in('project_id', projIds);
+        }
+        await supabase.from('projects').delete().eq('user_id', userId);
+        return true;
     }
 };
 
@@ -179,6 +199,13 @@ export const MOCK_API = {
     getDailyStats: sb.getDailyStats,
     saveDailyStats: sb.saveDailyStats,
     
-    // Cleanup (Not applicable to real SQL but kept for compatibility)
-    clearData: async () => true,
+    // Auth OAuth
+    signInWithGoogle: sb.signInWithGoogle,
+
+    // Cleanup
+    resetUserData: sb.resetUserData,
+    clearData: async (userId) => {
+        if (userId) await sb.resetUserData(userId);
+        return true;
+    },
 };

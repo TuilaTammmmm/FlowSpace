@@ -101,8 +101,8 @@ function Register() {
                 <input
                   type="password"
                   className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                 />

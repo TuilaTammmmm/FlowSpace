@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 
-function Navbar() {
+function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -135,4 +135,4 @@ function Navbar() {
   );
 }
 
-export default Navbar;
+export default Sidebar;

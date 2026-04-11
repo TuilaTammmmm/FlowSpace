@@ -1,5 +1,5 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,7 +13,7 @@ function MainLayout() {
   return (
     <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: 'var(--bg-dark)', color: 'white' }}>
       {/* Sidebar - sticky via its own position:sticky */}
-      <Navbar />
+      <Sidebar />
       
       {/* Right column: topbar + scrollable content */}
       <div className="d-flex flex-column flex-grow-1" style={{ minWidth: 0, height: '100vh', overflow: 'hidden' }}>

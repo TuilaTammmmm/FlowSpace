@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { MOCK_API } from '../services/api';
 
 function Register() {
   const [name, setName]         = useState('');

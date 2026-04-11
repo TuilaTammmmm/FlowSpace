@@ -15,7 +15,7 @@ function AuthLayout() {
   if (user) return <Navigate to="/" replace />; 
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center auth-theme-bg">
+    <div className="min-vh-100 d-flex align-items-center justify-content-center auth-aurora-bg">
         <Outlet /> 
     </div>
   )

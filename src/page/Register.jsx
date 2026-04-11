@@ -30,16 +30,16 @@ function Register() {
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center px-3 auth-aurora-bg">
-      <div className="glass-card p-5 w-100 page-transition" style={{ maxWidth: '460px', zIndex: 1, position: 'relative' }}>
+      <div className="glass-card p-5 w-100 page-transition" style={{ maxWidth: '480px', zIndex: 1, position: 'relative' }}>
         
         {/* Logo Section */}
         <div className="text-center mb-5">
-           <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-lg" 
-                style={{ width: '64px', height: '64px', background: 'var(--primary)', boxShadow: '0 0 20px var(--primary-glow)' }}>
-             <i className="bi bi-layers-fill text-white fs-2"></i>
-           </div>
-           <h2 className="fw-bold text-white mb-0" style={{ fontSize: '28px', letterSpacing: '-1px' }}>Gia nhập FlowSpace</h2>
-           <p className="text-secondary opacity-50 small text-uppercase tracking-widest mt-1" style={{ fontSize: '10px' }}>Kiến tạo không gian của riêng bạn</p>
+          <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow-lg"
+            style={{ width: '64px', height: '64px', background: 'var(--primary)', boxShadow: '0 0 20px var(--primary-glow)' }}>
+            <i className="bi bi-person-plus-fill text-white fs-2"></i>
+          </div>
+          <h2 className="fw-bold text-white mb-0" style={{ fontSize: '28px', letterSpacing: '-1px' }}>Tham gia FlowSpace</h2>
+          <p className="text-secondary opacity-50 small text-uppercase tracking-widest mt-1" style={{ fontSize: '10px' }}>Kiến tạo không gian làm việc của bạn</p>
         </div>
 
         {error && (
@@ -51,10 +51,10 @@ function Register() {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Họ và tên</label>
-            <div className="position-relative">
-              <i className="bi bi-person position-absolute top-50 translate-middle-y ms-3 text-muted" style={{ zIndex: 5 }}></i>
-              <input 
-                type="text" 
+            <div className="position-relative d-flex align-items-center">
+              <i className="bi bi-person position-absolute ms-3 text-muted" style={{ zIndex: 5, fontSize: '18px' }}></i>
+              <input
+                type="text"
                 className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
                 value={name}
                 onChange={e => setName(e.target.value)}
@@ -66,10 +66,10 @@ function Register() {
 
           <div className="mb-3">
             <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Địa chỉ Email</label>
-            <div className="position-relative">
-              <i className="bi bi-envelope position-absolute top-50 translate-middle-y ms-3 text-muted" style={{ zIndex: 5 }}></i>
-              <input 
-                type="email" 
+            <div className="position-relative d-flex align-items-center">
+              <i className="bi bi-envelope position-absolute ms-3 text-muted" style={{ zIndex: 5, fontSize: '18px' }}></i>
+              <input
+                type="email"
                 className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -79,18 +79,34 @@ function Register() {
             </div>
           </div>
 
-          <div className="mb-5">
-            <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Mật khẩu bảo mật</label>
-            <div className="position-relative">
-              <i className="bi bi-shield-lock position-absolute top-50 translate-middle-y ms-3 text-muted" style={{ zIndex: 5 }}></i>
-              <input 
-                type="password" 
-                className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
+          <div className="row g-3 mb-5">
+            <div className="col-md-6">
+              <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Mật khẩu</label>
+              <div className="position-relative d-flex align-items-center">
+                <i className="bi bi-shield-lock position-absolute ms-3 text-muted" style={{ zIndex: 5, fontSize: '18px' }}></i>
+                <input
+                  type="password"
+                  className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <label className="text-secondary fw-bold text-uppercase mb-2 d-block ms-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>Xác nhận</label>
+              <div className="position-relative d-flex align-items-center">
+                <i className="bi bi-shield-check position-absolute ms-3 text-muted" style={{ zIndex: 5, fontSize: '18px' }}></i>
+                <input
+                  type="password"
+                  className="form-control auth-input py-3 ps-5 rounded-4 shadow-none"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
             </div>
           </div>
 
@@ -103,9 +119,9 @@ function Register() {
             {loading ? (
               <span className="spinner-border spinner-border-sm me-2"></span>
             ) : (
-              <i className="bi bi-person-plus-fill me-2"></i>
+              <i className="bi bi-person-check me-2"></i>
             )}
-            {loading ? 'Đang khởi tạo...' : 'Đăng ký ngay'}
+            {loading ? 'Đang tạo...' : 'Đăng ký tài khoản'}
           </button>
 
           <div className="text-center">

@@ -1,5 +1,5 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
-import Navbar from '../components/navbar';
+import Navbar from '../components/Navbar';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 

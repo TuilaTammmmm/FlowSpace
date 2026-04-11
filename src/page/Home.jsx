@@ -208,6 +208,8 @@ function Home() {
       formatChartData(history);
     };
 
+    loadStats();
+
     const formatChartData = (raw) => {
       const now = new Date();
       now.setDate(now.getDate() + (weekOffset * 7));

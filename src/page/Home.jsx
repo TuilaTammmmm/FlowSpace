@@ -188,11 +188,13 @@ function Home() {
   const currentMonday = getMondayOfDate(new Date());
   
   // Total weeks from week1 to current
-  const totalWeeks = Math.max(1, Math.round((currentMonday - week1Monday) / (7 * 24 * 60 * 60 * 1000)) + 1);
+  // If no project yet, start at Week 1 for today
+  const totalWeeks = projectCreatedAt 
+    ? Math.max(1, Math.round((currentMonday - week1Monday) / (7 * 24 * 60 * 60 * 1000)) + 1)
+    : 1;
   
   // Current view: weekOffset 0 = current week, -1 = previous week
-  // viewWeekNum: 1-based week number
-  const viewWeekNum = totalWeeks + weekOffset;
+  const viewWeekNum = Math.max(1, totalWeeks + weekOffset);
   const currentWeekNum = totalWeeks;
   
   // Bounds: can't go before week 1, can't go past current week
@@ -217,7 +219,7 @@ function Home() {
         const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const label = `${weekdays[i]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-        const existing = raw.find(s => s.date === iso);
+        const existing = (raw || []).find(s => s.date === iso);
         weekData.push({
           name: label,
           fullDate: iso,
@@ -232,8 +234,13 @@ function Home() {
 
     const loadStats = async () => {
       try {
+        // Only fetch if we have an active project
+        if (!activeProjectId) {
+          buildChart([]);
+          return;
+        }
         const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
-        buildChart(history);
+        buildChart(history || []);
       } catch (err) {
         console.error("Failed to load stats:", err);
         buildChart([]);
@@ -241,7 +248,7 @@ function Home() {
     };
 
     loadStats();
-  }, [user, activeProjectId, weekOffset]);
+  }, [user, activeProjectId, weekOffset, viewMonday.getTime()]); 
 
   // Load current project tasks for the ring/stats
   useEffect(() => {

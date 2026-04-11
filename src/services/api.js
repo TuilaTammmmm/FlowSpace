@@ -141,13 +141,20 @@ const sb = {
         return true;
     },
 
-    // Daily Stats
+    // Stats (Handled by DB Trigger trigger_sync_stats on the tasks table)
     getDailyStats: async (userId, projectId) => {
-        let query = supabase.from('daily_stats').select('*').eq('user_id', userId).order('date', { ascending: true }).limit(60);
-        if (projectId !== undefined) {
-          if (projectId === null) query = query.is('project_id', null);
-          else query = query.eq('project_id', projectId);
+        let query = supabase.from('daily_stats')
+            .select('*')
+            .eq('user_id', userId)
+            .order('date', { ascending: true })
+            .limit(60);
+            
+        if (projectId) {
+            query = query.eq('project_id', projectId);
+        } else {
+            query = query.is('project_id', null);
         }
+        
         const { data, error } = await query;
         if (error) throw error;
         return data.map(d => ({
@@ -155,22 +162,6 @@ const sb = {
             total: d.total_tasks, done: d.completed_tasks,
             active: d.active_tasks, overdue: d.overdue_tasks
         }));
-    },
-
-    saveDailyStats: async (userId, stats) => {
-        const { data, error } = await supabase.from('daily_stats')
-            .upsert({
-                user_id: userId,
-                project_id: stats.projectId || null,
-                date: stats.date,
-                total_tasks: stats.total,
-                completed_tasks: stats.done,
-                active_tasks: stats.active,
-                overdue_tasks: stats.overdue
-            }, { onConflict: 'user_id,project_id,date' })
-            .select().single();
-        if (error) throw error;
-        return data;
     },
 
     resetUserData: async (userId) => {

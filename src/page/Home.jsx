@@ -458,9 +458,9 @@ function Home() {
                       itemStyle={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '13px' }}
                       labelStyle={{ color: 'var(--text-secondary)', fontWeight: 700, marginBottom: '4px' }}
                     />
-                    <Area type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={3} fill="url(#gTotal)" dot={false} activeDot={{ r: 5, fill: 'var(--primary)', stroke: 'white', strokeWidth: 2 }} />
-                    <Area type="monotone" dataKey="done"  stroke="#10B981"        strokeWidth={3} fill="url(#gDone)"  dot={false} activeDot={{ r: 5, fill: '#10B981',        stroke: 'white', strokeWidth: 2 }} />
-                    <Area type="monotone" dataKey="pending" stroke="#F59E0B" strokeWidth={3} fill="url(#gPending)" dot={false} activeDot={{ r: 5, fill: '#F59E0B', stroke: 'white', strokeWidth: 2 }} />
+                    <Area name="Tổng cộng" type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={3} fill="url(#gTotal)" dot={false} activeDot={{ r: 5, fill: 'var(--primary)', stroke: 'white', strokeWidth: 2 }} />
+                    <Area name="Đã xong" type="monotone" dataKey="done"  stroke="#10B981"        strokeWidth={3} fill="url(#gDone)"  dot={false} activeDot={{ r: 5, fill: '#10B981',        stroke: 'white', strokeWidth: 2 }} />
+                    <Area name="Đang làm" type="monotone" dataKey="pending" stroke="#F59E0B" strokeWidth={3} fill="url(#gPending)" dot={false} activeDot={{ r: 5, fill: '#F59E0B', stroke: 'white', strokeWidth: 2 }} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

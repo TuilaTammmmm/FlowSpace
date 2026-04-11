@@ -83,12 +83,17 @@ function Sidebar() {
       }}>
         {/* Red icon — click to toggle */}
         <div
-          className="rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
-          style={{ width: '32px', height: '32px', background: 'var(--primary)', boxShadow: '0 4px 12px var(--primary-glow)', cursor: 'pointer' }}
+          className="rounded-3 d-flex justify-content-center align-items-center flex-shrink-0 transition-all hover-scale"
+          style={{ 
+            width: '34px', height: '34px', 
+            background: 'var(--primary)', 
+            boxShadow: '0 4px 12px var(--primary-glow)', 
+            cursor: 'pointer' 
+          }}
           onClick={toggleCollapse}
           title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
         >
-          <i className="bi bi-layers-fill text-white" style={{ fontSize: '17px' }}></i>
+          <i className={`bi ${collapsed ? 'bi-text-indent-left' : 'bi-text-indent-right'} text-white`} style={{ fontSize: '18px' }}></i>
         </div>
 
         <span className="fw-bold text-white transition-all"
@@ -107,11 +112,12 @@ function Sidebar() {
         </span>
 
         <button onClick={toggleCollapse}
-          className="btn p-0 d-flex align-items-center justify-content-center text-secondary transition-all"
+          className="btn p-0 d-flex align-items-center justify-content-center text-secondary transition-all hover-scale"
           style={{ 
-            background: 'none', border: 'none', width: '24px', height: '24px', flexShrink: 0, cursor: 'pointer',
+            background: 'rgba(255,255,255,0.05)', border: 'none', width: '28px', height: '28px', flexShrink: 0, cursor: 'pointer',
+            borderRadius: '8px',
             opacity: collapsed ? 0 : 1,
-            maxWidth: collapsed ? '0' : '24px',
+            maxWidth: collapsed ? '0' : '28px',
             overflow: 'hidden',
             visibility: collapsed ? 'hidden' : 'visible'
           }}

@@ -83,17 +83,19 @@ function Sidebar() {
       }}>
         {/* Red icon — click to toggle */}
         <div
-          className="rounded-3 d-flex justify-content-center align-items-center flex-shrink-0 transition-all hover-scale"
+          className="rounded-circle d-flex justify-content-center align-items-center flex-shrink-0 transition-all hover-scale"
           style={{ 
             width: '34px', height: '34px', 
-            background: 'var(--primary)', 
-            boxShadow: '0 4px 12px var(--primary-glow)', 
-            cursor: 'pointer' 
+            background: 'var(--surface-3)', 
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)', 
+            cursor: 'pointer',
+            overflow: 'hidden',
+            border: '1px solid var(--border-medium)'
           }}
           onClick={toggleCollapse}
           title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
         >
-          <i className={`bi ${collapsed ? 'bi-text-indent-left' : 'bi-text-indent-right'} text-white`} style={{ fontSize: '18px' }}></i>
+          <img src="/logo.jpg" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
 
         <span className="fw-bold text-white transition-all"

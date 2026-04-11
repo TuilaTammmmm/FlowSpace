@@ -202,14 +202,6 @@ function Home() {
   useEffect(() => {
     if (!user) return;
     
-    const loadStats = async () => {
-      // 2. FETCH HISTORY for the active project
-      const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
-      formatChartData(history);
-    };
-
-    loadStats();
-
     const formatChartData = (raw) => {
       const now = new Date();
       now.setDate(now.getDate() + (weekOffset * 7));
@@ -238,6 +230,16 @@ function Home() {
         });
       }
       setChartData(weekData);
+    };
+
+    const loadStats = async () => {
+      try {
+        // FETCH HISTORY for the active project
+        const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
+        formatChartData(history);
+      } catch (err) {
+        console.error("Failed to load stats:", err);
+      }
     };
 
     loadStats();

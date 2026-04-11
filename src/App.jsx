@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import ToastContainer from './components/ToastContainer';
@@ -31,6 +31,9 @@ function App() {
           <Route path="/user" element={<User />} />
           <Route path="/setting" element={<Setting />} />
         </Route>
+
+        {/* Redirect /dashboard to / */}
+        <Route path="/dashboard" element={<Navigate to="/" replace />} />
 
       </Routes>
       <ToastContainer />

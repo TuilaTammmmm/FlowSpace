@@ -22,15 +22,41 @@ const sb = {
     },
 
     register: async (email, password, name) => {
-        // Check if exists
-        const { data: existing } = await supabase.from('users').select('id').eq('email', email).single();
-        if (existing) throw new Error('Email đã tồn tại!');
+        // 1. Sign up in Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: { name }
+            }
+        });
+        if (authError) throw authError;
 
-        const { data, error } = await supabase.from('users').insert({
-            email, password, name, department: '', bio: '', avatar_url: ''
-        }).select().single();
-        if (error) throw error;
-        return { user: data, token: 'sb-jwt-' + data.id };
+        // 2. Wait for trigger or check if exists
+        let dbUser = null;
+        let retries = 5;
+        while (retries > 0 && !dbUser) {
+            const { data } = await supabase.from('users').select('*').eq('email', email).single();
+            if (data) dbUser = data;
+            else {
+                await new Promise(r => setTimeout(r, 600));
+                retries--;
+            }
+        }
+
+        // Final fallback
+        if (!dbUser && authData?.user) {
+            const { data: fallbackUser } = await supabase.from('users').insert({
+                id: authData.user.id,
+                email,
+                name,
+                password // keeping for legacy fallback check
+            }).select().single();
+            dbUser = fallbackUser;
+        }
+
+        if (!dbUser) throw new Error('Không thể tạo hồ sơ người dùng');
+        return { user: dbUser, token: 'sb-jwt-' + dbUser.id };
     },
 
 
@@ -52,7 +78,13 @@ const sb = {
     createProject: async (userId, name) => {
         const { data, error } = await supabase.from('projects').insert({ user_id: userId, name }).select().single();
         if (error) throw error;
-        return { id: data.id, userId: data.user_id, name: data.name, isMuted: data.is_muted };
+        return {
+            id: data.id,
+            userId: data.user_id,
+            name: data.name,
+            isMuted: data.is_muted,
+            createdAt: data.created_at // Crucial for Home.jsx week anchoring
+        };
     },
 
     updateProject: async (id, name) => {
@@ -148,13 +180,13 @@ const sb = {
             .eq('user_id', userId)
             .order('date', { ascending: true })
             .limit(60);
-            
+
         if (projectId) {
             query = query.eq('project_id', projectId);
         } else {
             query = query.is('project_id', null);
         }
-        
+
         const { data, error } = await query;
         if (error) throw error;
         return data.map(d => ({
@@ -184,7 +216,7 @@ export const MOCK_API = {
     login: sb.login,
     register: sb.register,
     updateUserProfile: sb.updateUserProfile,
-    
+
     // Projects
     getProjectsByUserId: sb.getProjectsByUserId,
     createProject: sb.createProject,
@@ -204,7 +236,7 @@ export const MOCK_API = {
     // Stats
     getDailyStats: sb.getDailyStats,
     saveDailyStats: sb.saveDailyStats,
-    
+
     // Auth OAuth
     signInWithGoogle: sb.signInWithGoogle,
 

@@ -90,12 +90,12 @@ function InlineField({ label, value, type = 'text', textarea = false, editMode, 
 function User() {
   const { user, logout, updateUserProfile } = useAuth();
   const { projects } = useProjects();
-  const [allTasks, setAllTasks]     = useState([]);
-  const [editMode, setEditMode]     = useState(false);
-  const [socials, setSocials]       = useState({
+  const [allTasks, setAllTasks] = useState([]);
+  const [editMode, setEditMode] = useState(false);
+  const [socials, setSocials] = useState({
     facebook: user?.facebook || '',
-    github:   user?.github   || '',
-    twitter:  user?.twitter  || '',
+    github: user?.github || '',
+    twitter: user?.twitter || '',
   });
 
   // Load ALL tasks across all projects for stats
@@ -108,8 +108,8 @@ function User() {
   useEffect(() => {
     setSocials({
       facebook: user?.facebook || '',
-      github:   user?.github   || 'https://github.com/TuilaTammmmm',
-      twitter:  user?.twitter  || '',
+      github: user?.github || '',
+      twitter: user?.twitter || '',
     });
   }, [user]);
 
@@ -124,7 +124,7 @@ function User() {
 
   const handleSaveAll = () => setEditMode(false);
 
-  const doneCount  = allTasks.filter(t => t.status === 'done').length;
+  const doneCount = allTasks.filter(t => t.status === 'done').length;
   const totalCount = allTasks.length;
 
   return (
@@ -141,7 +141,7 @@ function User() {
           {/* Avatar + Edit toggle */}
           <div className="d-flex justify-content-between align-items-end mb-4">
             <div className="d-flex align-items-end gap-4">
-              <div 
+              <div
                 className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-premium position-relative overflow-hidden cursor-pointer"
                 style={{ width: '104px', height: '104px', fontSize: '36px', background: 'var(--primary)', border: '4px solid var(--bg-deep)' }}
                 onClick={() => document.getElementById('avatarInput').click()}
@@ -157,11 +157,11 @@ function User() {
                   </div>
                 )}
               </div>
-              <input 
-                id="avatarInput" 
-                type="file" 
-                hidden 
-                accept="image/*" 
+              <input
+                id="avatarInput"
+                type="file"
+                hidden
+                accept="image/*"
                 onChange={async (e) => {
                   const file = e.target.files[0];
                   if (file) {
@@ -229,8 +229,8 @@ function User() {
                 <h6 className="fw-bold text-uppercase mb-4" style={{ fontSize: '10px', letterSpacing: '1.5px', color: 'var(--primary)' }}>
                   <i className="bi bi-share-fill me-2"></i> Mạng xã hội
                 </h6>
-                <SocialLinkRow icon="facebook"  platform="Facebook" value={socials.facebook} editMode={editMode} onSave={url => handleSaveSocial('facebook', url)} />
-                <SocialLinkRow icon="github"    platform="GitHub"   value={socials.github}   editMode={editMode} onSave={url => handleSaveSocial('github', url)} />
+                <SocialLinkRow icon="facebook" platform="Facebook" value={socials.facebook} editMode={editMode} onSave={url => handleSaveSocial('facebook', url)} />
+                <SocialLinkRow icon="github" platform="GitHub" value={socials.github} editMode={editMode} onSave={url => handleSaveSocial('github', url)} />
                 <SocialLinkRow icon="twitter-x" platform="X / Twitter" value={socials.twitter} editMode={editMode} onSave={url => handleSaveSocial('twitter', url)} />
               </div>
             </div>

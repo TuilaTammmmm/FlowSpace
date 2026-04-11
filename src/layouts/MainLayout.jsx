@@ -7,7 +7,7 @@ function MainLayout() {
   const { user, loading } = useAuth();
   const location = useLocation(); // Theo dõi đường dẫn URL hiện hành
   
-  if (loading) return <div className="text-white p-5 d-flex justify-content-center">Đang tải cấu hình FlowSpace (v1.2)...</div>;
+  if (loading) return null; // Bỏ thông báo đang tải theo yêu cầu
   if (!user) return <Navigate to="/login" replace />; 
 
   return (

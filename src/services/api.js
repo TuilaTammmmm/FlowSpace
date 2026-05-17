@@ -16,8 +16,13 @@ const sb = {
             if (dbUser) return { user: dbUser, token: 'sb-jwt-' + dbUser.id };
         }
         // Fallback: direct table query (for users not yet in auth)
-        const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password).single();
-        if (error || !data) throw new Error('Sai email hoặc mật khẩu');
+        const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password).maybeSingle();
+        if (error) {
+            console.error('Lỗi truy vấn db:', error);
+            if (error.code === 'PGRST205') throw new Error('Cơ sở dữ liệu chưa được cài đặt đúng (thiếu bảng users). Vui lòng chạy file supabase_setup.sql.');
+            throw new Error('Lỗi máy chủ khi đăng nhập: ' + error.message);
+        }
+        if (!data) throw new Error('Sai email hoặc mật khẩu');
         return { user: data, token: 'sb-jwt-' + data.id };
     },
 
@@ -48,15 +53,18 @@ const sb = {
 
         if (dbError) {
             console.error('Registration profile error:', dbError);
+            if (dbError.code === 'PGRST205') {
+                throw new Error('Cơ sở dữ liệu chưa được cài đặt đúng (thiếu bảng users). Vui lòng chạy file supabase_setup.sql.');
+            }
             // If upsert fails, fallback to wait-and-fetch
             let finalUser = null;
             let retries = 5;
             while (retries > 0 && !finalUser) {
-                const { data } = await supabase.from('users').select('*').eq('email', email).single();
+                const { data } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
                 if (data) finalUser = data;
                 else { await delay(600); retries--; }
             }
-            if (!finalUser) throw new Error('Không thể đồng bộ hồ sơ người dùng');
+            if (!finalUser) throw new Error('Không thể đồng bộ hồ sơ người dùng do lỗi DB: ' + dbError.message);
             return { user: finalUser, token: 'sb-jwt-' + finalUser.id };
         }
 

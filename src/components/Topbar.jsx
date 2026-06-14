@@ -1,11 +1,146 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useProjects } from '../context/ProjectContext';
 import { MOCK_API } from '../services/api';
+
+/* ── Add Project Modal ── */
+function AddProjectModal({ onAdd, onClose }) {
+  const [name, setName] = useState('');
+  return (
+    <div className="position-fixed d-flex align-items-center justify-content-center"
+      style={{ inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 2000, backdropFilter: 'blur(4px)' }}
+      onClick={onClose}>
+      <div className="card-premium p-5 shadow-premium" style={{ width: '400px' }} onClick={e => e.stopPropagation()}>
+        <h5 className="fw-bold mb-3" style={{ color: 'var(--text-primary)' }}>Tạo dự án mới</h5>
+        <input autoFocus className="form-control mb-4" placeholder="Tên dự án..." value={name} onChange={e => setName(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && name.trim()) { onAdd(name.trim()); onClose(); } }} />
+        <div className="d-flex gap-3 justify-content-end">
+          <button className="btn text-secondary fw-bold" onClick={onClose}>Hủy</button>
+          <button className="btn btn-primary-red fw-bold px-4" onClick={() => { if (name.trim()) { onAdd(name.trim()); onClose(); } }}>Bắt đầu ngay</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Project Rename/Delete confirmation ── */
+function ProjectActionsModal({ project, onRename, onDelete, onClose }) {
+  const [mode, setMode]       = useState('menu'); 
+  const [newName, setNewName] = useState(project?.name || '');
+  const [deleteInput, setDeleteInput] = useState('');
+
+  useEffect(() => { setNewName(project?.name || ''); setDeleteInput(''); setMode('menu'); }, [project]);
+
+  if (!project) return null;
+  const expectedDelete = `DELETE/${project.name}`;
+
+  return (
+    <div
+      className="position-fixed d-flex align-items-center justify-content-center"
+      style={{ inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 2000, backdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="shadow-premium"
+        style={{ background: 'var(--surface-1)', border: '1px solid var(--border-thin)', borderRadius: '16px', width: '420px', overflow: 'hidden' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="d-flex justify-content-between align-items-center px-5 py-4 border-bottom" style={{ borderColor: 'var(--border-thin)' }}>
+          <span className="fw-bold" style={{ fontSize: '13px', color: 'var(--text-primary)' }}>Quản lý dự án: {project.name}</span>
+          <button className="btn p-0 text-secondary" style={{ background: 'none', border: 'none', fontSize: '18px' }} onClick={onClose}>
+            <i className="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div className="p-5">
+          {mode === 'menu' && (
+            <div className="d-flex flex-column gap-3">
+              <button onClick={() => setMode('rename')}
+                className="btn fw-bold w-100 py-3 d-flex align-items-center gap-3 rounded-3"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-thin)', color: 'var(--text-primary)' }}>
+                <i className="bi bi-pencil-fill" style={{ color: 'var(--primary)' }}></i> Đổi tên dự án
+              </button>
+              <button onClick={() => {
+                  MOCK_API.toggleMuteProject(project.id, !project.isMuted).then(() => window.location.reload());
+                }}
+                className="btn fw-bold w-100 py-3 d-flex align-items-center gap-3 rounded-3"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-thin)', color: 'var(--text-primary)' }}>
+                <i className={`bi ${project.isMuted ? 'bi-bell-fill' : 'bi-bell-slash-fill'}`} style={{ color: 'var(--warning)' }}></i> 
+                {project.isMuted ? 'Bật thông báo' : 'Tắt thông báo'}
+              </button>
+              <button onClick={() => setMode('delete')}
+                className="btn fw-bold w-100 py-3 d-flex align-items-center gap-3 rounded-3"
+                style={{ background: 'rgba(255,61,61,0.04)', border: '1px solid rgba(255,61,61,0.2)', color: '#ef4444' }}>
+                <i className="bi bi-trash-fill"></i> Xóa dự án
+              </button>
+            </div>
+          )}
+
+          {mode === 'rename' && (
+            <div>
+              <p className="text-secondary small mb-3">Nhập tên mới cho dự án:</p>
+              <input
+                autoFocus
+                className="form-control mb-4"
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { onRename(project.id, newName); onClose(); } }}
+              />
+              <div className="d-flex gap-3 justify-content-end">
+                <button className="btn text-secondary fw-bold" onClick={() => setMode('menu')}>Quay lại</button>
+                <button className="btn btn-primary-red fw-bold px-4"
+                  onClick={() => { if (newName.trim()) { onRename(project.id, newName.trim()); onClose(); } }}>
+                  Lưu tên mới
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mode === 'delete' && (
+            <div>
+              <div className="p-3 rounded-3 mb-4" style={{ background: 'rgba(255,61,61,0.06)', border: '1px solid rgba(255,61,61,0.2)' }}>
+                <p className="text-secondary small mb-2">
+                  Hành động này sẽ xóa vĩnh viễn dự án và <strong style={{ color: 'var(--text-primary)' }}>tất cả task</strong> bên trong. Không thể hoàn tác!
+                </p>
+                <p className="mb-0 small" style={{ color: '#ef4444', fontWeight: 600 }}>
+                  Nhập: <code style={{ background: 'rgba(255,61,61,0.15)', padding: '2px 6px', borderRadius: '4px', color: '#ef4444' }}>{expectedDelete}</code> để xác nhận
+                </p>
+              </div>
+              <input
+                autoFocus
+                className="form-control mb-4"
+                placeholder={expectedDelete}
+                value={deleteInput}
+                onChange={e => setDeleteInput(e.target.value)}
+              />
+              <div className="d-flex gap-3 justify-content-end">
+                <button className="btn text-secondary fw-bold" onClick={() => setMode('menu')}>Quay lại</button>
+                <button
+                  className="btn fw-bold px-4"
+                  style={{ background: '#dc3545', color: 'white', border: 'none', borderRadius: '10px', opacity: deleteInput === expectedDelete ? 1 : 0.4 }}
+                  disabled={deleteInput !== expectedDelete}
+                  onClick={() => { onDelete(project.id); onClose(); }}>
+                  <i className="bi bi-trash me-2"></i> Xóa vĩnh viễn
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Topbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { projects, activeProjectId, changeActiveProject, addProject, deleteProject, renameProject } = useProjects();
+
+  const hideProjectTabs = location.pathname === '/setting' || location.pathname === '/user';
+  const [projectAction, setProjectAction] = useState(null);
+  const [showAddProject, setShowAddProject] = useState(false);
 
   const [showNotif, setShowNotif]       = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -114,18 +249,63 @@ function Topbar() {
     <div className="d-flex justify-content-between align-items-center py-3 px-4 topbar-wrapper w-100"
       style={{ position: 'relative', zIndex: 200 }}>
 
-      {/* Left spacer (was Search) / Pomodoro */}
-      <div className="d-flex align-items-center gap-2" style={{ background: 'var(--surface-2)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-thin)' }}>
-        <i className="bi bi-clock-history text-danger hover-scale" style={{ cursor: 'pointer' }} onClick={changeDuration} title="Nhấn để đổi thời gian (25m/15m/5m)"></i>
-        <span className="fw-bold fs-5" style={{ color: pomoTime < 60 ? 'var(--primary)' : 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-          {formatPomo(pomoTime)}
-        </span>
-        <button className="btn btn-sm p-0 ms-2 text-secondary hover-scale" onClick={togglePomo}>
-          <i className={`bi ${pomoActive ? 'bi-pause-fill' : 'bi-play-fill'} fs-5`}></i>
-        </button>
-        <button className="btn btn-sm p-0 ms-1 text-secondary hover-scale" onClick={resetPomo}>
-          <i className="bi bi-arrow-counterclockwise fs-5"></i>
-        </button>
+      {/* Left side: Project Tabs & Pomodoro */}
+      <div className="d-flex align-items-center gap-3">
+        
+        {/* Project Switcher */}
+        {!hideProjectTabs && (
+          <div className="d-flex align-items-center workspace-tabs-scroll" style={{ gap: '4px' }}>
+            {projects.map(proj => (
+              <div key={proj.id} 
+                className="position-relative group"
+                style={{ flexShrink: 0 }}>
+                <div 
+                  onClick={() => changeActiveProject(proj.id)}
+                  className="px-4 py-2 fw-bold rounded-3 small d-flex align-items-center gap-2 transition-all"
+                  style={{ 
+                    cursor: 'pointer',
+                    color: activeProjectId === proj.id ? '#FFF' : 'var(--text-secondary)', 
+                    background: activeProjectId === proj.id ? 'var(--primary)' : 'transparent',
+                    border: activeProjectId === proj.id ? 'none' : '1px solid transparent',
+                    whiteSpace: 'nowrap' 
+                  }}>
+                  <span>{proj.name}</span>
+                  
+                  <div className="d-flex align-items-center gap-1 ms-1">
+                    {proj.isMuted && (
+                      <i className="bi bi-bell-slash-fill" style={{ fontSize: '10px', opacity: 0.8 }}></i>
+                    )}
+                    <div onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setProjectAction(proj);
+                    }} className="hover-scale ms-1" style={{ cursor: 'pointer', opacity: 0.6 }}>
+                      <i className="bi bi-gear-fill" style={{ fontSize: '10px' }}></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div onClick={() => setShowAddProject(true)}
+              className="fw-bold px-3 py-2 flex-shrink-0"
+              style={{ cursor: 'pointer', color: 'var(--text-muted)', whiteSpace: 'nowrap', opacity: 0.6 }}>
+              <i className="bi bi-plus-lg"></i>
+            </div>
+          </div>
+        )}
+
+        {/* Pomodoro */}
+        <div className="d-flex align-items-center gap-2" style={{ background: 'var(--surface-2)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-thin)' }}>
+          <i className="bi bi-clock-history text-danger hover-scale" style={{ cursor: 'pointer' }} onClick={changeDuration} title="Nhấn để đổi thời gian (25m/15m/5m)"></i>
+          <span className="fw-bold fs-5" style={{ color: pomoTime < 60 ? 'var(--primary)' : 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
+            {formatPomo(pomoTime)}
+          </span>
+          <button className="btn btn-sm p-0 ms-2 text-secondary hover-scale" onClick={togglePomo}>
+            <i className={`bi ${pomoActive ? 'bi-pause-fill' : 'bi-play-fill'} fs-5`}></i>
+          </button>
+          <button className="btn btn-sm p-0 ms-1 text-secondary hover-scale" onClick={resetPomo}>
+            <i className="bi bi-arrow-counterclockwise fs-5"></i>
+          </button>
+        </div>
       </div>
 
       {/* Right group */}
@@ -290,6 +470,21 @@ function Topbar() {
           )}
         </div>
       </div>
+
+      {/* Project manage modal */}
+      {projectAction && (
+        <ProjectActionsModal
+          project={projectAction}
+          onRename={renameProject}
+          onDelete={deleteProject}
+          onClose={() => setProjectAction(null)}
+        />
+      )}
+
+      {/* Add Project Modal */}
+      {showAddProject && (
+        <AddProjectModal onAdd={addProject} onClose={() => setShowAddProject(false)} />
+      )}
     </div>
   );
 }

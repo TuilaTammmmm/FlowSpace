@@ -309,48 +309,6 @@ function Home() {
   return (
     <div className="container-fluid p-0" style={{ maxWidth: '1200px' }}>
 
-      {/* Project Switcher */}
-      <div className="d-flex mb-4 px-1 align-items-center workspace-tabs-scroll"
-        style={{ gap: '4px', borderBottom: '1px solid var(--border-thin)', paddingBottom: '4px' }}>
-        
-        {projects.map(proj => (
-          <div key={proj.id} 
-            className="position-relative group"
-            style={{ flexShrink: 0 }}>
-            <div 
-              onClick={() => changeActiveProject(proj.id)}
-              className="px-4 py-2 fw-bold rounded-3 small d-flex align-items-center gap-2 transition-all"
-              style={{ 
-                cursor: 'pointer',
-                color: activeProjectId === proj.id ? '#FFF' : 'var(--text-secondary)', 
-                background: activeProjectId === proj.id ? 'var(--primary)' : 'transparent',
-                border: activeProjectId === proj.id ? 'none' : '1px solid transparent',
-                whiteSpace: 'nowrap' 
-              }}>
-              <span>{proj.name}</span>
-              
-              {/* Internal Tab Controls */}
-              <div className="d-flex align-items-center gap-1 ms-1">
-                {proj.isMuted && (
-                  <i className="bi bi-bell-slash-fill" style={{ fontSize: '10px', opacity: 0.8 }}></i>
-                )}
-                <div onClick={(e) => { 
-                  e.stopPropagation(); 
-                  setProjectAction(proj);
-                }} className="hover-scale ms-1" style={{ cursor: 'pointer', opacity: 0.6 }}>
-                  <i className="bi bi-gear-fill" style={{ fontSize: '10px' }}></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-        <div onClick={handleAddProject}
-          className="fw-bold px-3 py-2 flex-shrink-0"
-          style={{ cursor: 'pointer', color: 'var(--text-muted)', whiteSpace: 'nowrap', opacity: 0.6 }}>
-          <i className="bi bi-plus-lg"></i>
-        </div>
-      </div>
-
       {/* Hero Banner */}
       <div className="px-5 py-4 rounded-4 mb-4 shadow-premium position-relative overflow-hidden"
         style={{ background: 'linear-gradient(135deg, var(--primary) 0%, #8B0000 100%)' }}>

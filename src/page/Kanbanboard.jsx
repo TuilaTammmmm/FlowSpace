@@ -322,47 +322,9 @@ function Kanbanboard() {
 
   return (
     <div className="container-fluid p-0 d-flex flex-column" style={{ minHeight: '100%' }}>
-      {/* Project Tabs & Search */}
-      <div className="d-flex mb-4 px-1 align-items-center justify-content-between flex-wrap gap-3"
+      {/* Search Input */}
+      <div className="d-flex mb-4 px-1 align-items-center justify-content-end flex-wrap gap-3"
         style={{ borderBottom: '1px solid var(--border-thin)', paddingBottom: '12px' }}>
-        <div className="d-flex align-items-center workspace-tabs-scroll" style={{ gap: '4px' }}>
-          {projects.map(proj => (
-            <div key={proj.id} 
-              className="position-relative group"
-              style={{ flexShrink: 0 }}>
-              <div 
-                onClick={() => changeActiveProject(proj.id)}
-                className="px-4 py-2 fw-bold rounded-3 small d-flex align-items-center gap-2 transition-all"
-                style={{ 
-                  cursor: 'pointer',
-                  color: activeProjectId === proj.id ? '#FFF' : 'var(--text-secondary)', 
-                  background: activeProjectId === proj.id ? 'var(--primary)' : 'transparent',
-                  border: activeProjectId === proj.id ? 'none' : '1px solid transparent',
-                  whiteSpace: 'nowrap' 
-                }}>
-                <span>{proj.name}</span>
-                <div className="d-flex align-items-center gap-1 ms-1">
-                  {proj.isMuted && (
-                    <i className="bi bi-bell-slash-fill" style={{ fontSize: '10px', opacity: 0.8 }}></i>
-                  )}
-                  <div onClick={(e) => { 
-                    e.stopPropagation(); 
-                    setProjectAction(proj);
-                  }} className="hover-scale ms-1" style={{ cursor: 'pointer', opacity: 0.6 }}>
-                    <i className="bi bi-gear-fill" style={{ fontSize: '10px' }}></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-          <div onClick={handleCreateFirst}
-            className="fw-bold px-3 py-2 flex-shrink-0"
-            style={{ cursor: 'pointer', color: 'var(--text-muted)', whiteSpace: 'nowrap', opacity: 0.6 }}>
-            <i className="bi bi-plus-lg"></i>
-          </div>
-        </div>
-
-        {/* Search Input */}
         <div className="d-flex align-items-center position-relative" style={{ minWidth: '250px' }}>
           <i className="bi bi-search position-absolute text-muted" style={{ left: '12px' }}></i>
           <input 

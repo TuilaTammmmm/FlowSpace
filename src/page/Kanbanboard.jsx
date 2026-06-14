@@ -377,7 +377,7 @@ function Kanbanboard() {
 
       {/* Columns with DndContext */}
       <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="d-flex gap-3 overflow-auto pb-4" 
+        <div className="d-flex gap-3 overflow-auto pb-4 justify-content-center" 
           style={{ alignItems: 'flex-start', minHeight: '600px', flex: 1 }}>
           {COLUMNS.map(col => (
             <KanbanColumn key={col.status} {...col} tasks={filteredTasks}

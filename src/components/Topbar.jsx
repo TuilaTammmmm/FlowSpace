@@ -13,23 +13,36 @@ function Topbar() {
   const [readIds, setReadIds]           = useState(new Set()); 
 
   // Pomodoro state
+  const [pomoDuration, setPomoDuration] = useState(25 * 60);
   const [pomoTime, setPomoTime] = useState(25 * 60);
   const [pomoActive, setPomoActive] = useState(false);
+
+  const playSound = () => {
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    audio.play().catch(e => console.log('Audio error:', e));
+  };
 
   useEffect(() => {
     let interval = null;
     if (pomoActive && pomoTime > 0) {
       interval = setInterval(() => setPomoTime(t => t - 1), 1000);
-    } else if (pomoTime === 0) {
+    } else if (pomoTime === 0 && pomoActive) {
       setPomoActive(false);
-      // Play a sound or show confetti?
+      playSound();
       alert("Hết giờ tập trung (Pomodoro)!");
     }
     return () => clearInterval(interval);
   }, [pomoActive, pomoTime]);
 
   const togglePomo = () => setPomoActive(!pomoActive);
-  const resetPomo = () => { setPomoActive(false); setPomoTime(25 * 60); };
+  const resetPomo = () => { setPomoActive(false); setPomoTime(pomoDuration); };
+
+  const changeDuration = () => {
+    if (pomoActive) return;
+    const next = pomoDuration === 25*60 ? 15*60 : pomoDuration === 15*60 ? 5*60 : 25*60;
+    setPomoDuration(next);
+    setPomoTime(next);
+  };
   
   const formatPomo = (s) => {
     const m = Math.floor(s / 60);
@@ -103,7 +116,7 @@ function Topbar() {
 
       {/* Left spacer (was Search) / Pomodoro */}
       <div className="d-flex align-items-center gap-2" style={{ background: 'var(--surface-2)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-thin)' }}>
-        <i className="bi bi-clock-history text-danger"></i>
+        <i className="bi bi-clock-history text-danger hover-scale" style={{ cursor: 'pointer' }} onClick={changeDuration} title="Nhấn để đổi thời gian (25m/15m/5m)"></i>
         <span className="fw-bold fs-5" style={{ color: pomoTime < 60 ? 'var(--primary)' : 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
           {formatPomo(pomoTime)}
         </span>

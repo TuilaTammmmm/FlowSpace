@@ -65,7 +65,7 @@ function CalendarView() {
       );
       day = addDays(day, 1);
     }
-    rows.push(<div className="d-flex w-100" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }} key={day}>{days}</div>);
+    rows.push(<div className="w-100" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }} key={day}>{days}</div>);
     days = [];
   }
 
@@ -83,7 +83,7 @@ function CalendarView() {
       </div>
       
       <div className="card-premium p-0 overflow-hidden shadow-premium">
-        <div className="d-flex w-100 py-2" style={{ background: 'var(--surface-3)', display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        <div className="w-100 py-2" style={{ background: 'var(--surface-3)', display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
           {weekDays.map((d, i) => <div key={i} className="text-center fw-bold small text-secondary">{d}</div>)}
         </div>
         <div>

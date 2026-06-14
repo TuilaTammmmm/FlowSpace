@@ -20,8 +20,8 @@ function InlineTitle({ value, onSave }) {
   if (editing) return (
     <input
       autoFocus
-      className="fw-bold text-white w-100 inline-edit-input"
-      style={{ fontSize: '14px', lineHeight: '1.4' }}
+      className="fw-bold w-100 inline-edit-input"
+      style={{ fontSize: '14px', lineHeight: '1.4', color: 'var(--text-primary)', background: 'transparent', border: 'none', outline: 'none' }}
       value={val}
       onChange={e => setVal(e.target.value)}
       onBlur={save}
@@ -31,8 +31,8 @@ function InlineTitle({ value, onSave }) {
 
   return (
     <h6
-      className="fw-bold text-white mb-0"
-      style={{ fontSize: '14px', lineHeight: '1.4', cursor: 'text' }}
+      className="fw-bold mb-0"
+      style={{ fontSize: '14px', lineHeight: '1.4', cursor: 'text', color: 'var(--text-primary)' }}
       title="Nhấn đúp để đổi tên"
       onDoubleClick={() => setEditing(true)}
     >

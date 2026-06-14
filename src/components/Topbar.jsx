@@ -249,9 +249,23 @@ function Topbar() {
     <div className="d-flex justify-content-between align-items-center py-3 px-4 topbar-wrapper w-100"
       style={{ position: 'relative', zIndex: 200 }}>
 
-      {/* Left side: Project Tabs & Pomodoro */}
+      {/* Left side: Pomodoro & Project Tabs */}
       <div className="d-flex align-items-center gap-3">
         
+        {/* Pomodoro */}
+        <div className="d-flex align-items-center gap-2" style={{ background: 'var(--surface-2)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-thin)' }}>
+          <i className="bi bi-clock-history text-danger hover-scale" style={{ cursor: 'pointer' }} onClick={changeDuration} title="Nhấn để đổi thời gian (25m/15m/5m)"></i>
+          <span className="fw-bold fs-5" style={{ color: pomoTime < 60 ? 'var(--primary)' : 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
+            {formatPomo(pomoTime)}
+          </span>
+          <button className="btn btn-sm p-0 ms-2 text-secondary hover-scale" onClick={togglePomo}>
+            <i className={`bi ${pomoActive ? 'bi-pause-fill' : 'bi-play-fill'} fs-5`}></i>
+          </button>
+          <button className="btn btn-sm p-0 ms-1 text-secondary hover-scale" onClick={resetPomo}>
+            <i className="bi bi-arrow-counterclockwise fs-5"></i>
+          </button>
+        </div>
+
         {/* Project Switcher */}
         {!hideProjectTabs && (
           <div className="d-flex align-items-center workspace-tabs-scroll" style={{ gap: '4px' }}>
@@ -292,20 +306,6 @@ function Topbar() {
             </div>
           </div>
         )}
-
-        {/* Pomodoro */}
-        <div className="d-flex align-items-center gap-2" style={{ background: 'var(--surface-2)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-thin)' }}>
-          <i className="bi bi-clock-history text-danger hover-scale" style={{ cursor: 'pointer' }} onClick={changeDuration} title="Nhấn để đổi thời gian (25m/15m/5m)"></i>
-          <span className="fw-bold fs-5" style={{ color: pomoTime < 60 ? 'var(--primary)' : 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-            {formatPomo(pomoTime)}
-          </span>
-          <button className="btn btn-sm p-0 ms-2 text-secondary hover-scale" onClick={togglePomo}>
-            <i className={`bi ${pomoActive ? 'bi-pause-fill' : 'bi-play-fill'} fs-5`}></i>
-          </button>
-          <button className="btn btn-sm p-0 ms-1 text-secondary hover-scale" onClick={resetPomo}>
-            <i className="bi bi-arrow-counterclockwise fs-5"></i>
-          </button>
-        </div>
       </div>
 
       {/* Right group */}

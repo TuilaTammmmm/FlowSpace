@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Modal, Form } from 'react-bootstrap';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 /* --------------------------------------------------------
    Inline editable title on card
@@ -42,8 +44,24 @@ function InlineTitle({ value, onSave }) {
 /* --------------------------------------------------------
    Main TaskCard
 -------------------------------------------------------- */
-function TaskCard({ task, onDragStart, onUpdate, onDelete }) {
+function TaskCard({ task, onUpdate, onDelete }) {
   const [showModal, setShowModal] = useState(false);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: String(task.id), data: task });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'grab',
+  };
 
   const [title, setTitle]           = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
@@ -106,10 +124,11 @@ function TaskCard({ task, onDragStart, onUpdate, onDelete }) {
     <>
       {/* ── Card ── */}
       <div
-        className="task-card p-3 shadow-premium"
-        style={{ cursor: 'grab', borderLeft: isOverdue ? '3px solid var(--primary)' : undefined }}
-        draggable
-        onDragStart={(e) => onDragStart(e, task.id)}
+        ref={setNodeRef}
+        style={{ ...style, borderLeft: isOverdue ? '3px solid var(--primary)' : undefined }}
+        className="task-card p-3 shadow-premium position-relative"
+        {...attributes}
+        {...listeners}
         onDoubleClick={() => setShowModal(true)}
       >
         {/* Overdue banner */}

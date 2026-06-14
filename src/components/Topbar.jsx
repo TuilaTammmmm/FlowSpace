@@ -12,6 +12,31 @@ function Topbar() {
   const [overdueNotifs, setOverdueNotifs] = useState([]);
   const [readIds, setReadIds]           = useState(new Set()); 
 
+  // Pomodoro state
+  const [pomoTime, setPomoTime] = useState(25 * 60);
+  const [pomoActive, setPomoActive] = useState(false);
+
+  useEffect(() => {
+    let interval = null;
+    if (pomoActive && pomoTime > 0) {
+      interval = setInterval(() => setPomoTime(t => t - 1), 1000);
+    } else if (pomoTime === 0) {
+      setPomoActive(false);
+      // Play a sound or show confetti?
+      alert("Hết giờ tập trung (Pomodoro)!");
+    }
+    return () => clearInterval(interval);
+  }, [pomoActive, pomoTime]);
+
+  const togglePomo = () => setPomoActive(!pomoActive);
+  const resetPomo = () => { setPomoActive(false); setPomoTime(25 * 60); };
+  
+  const formatPomo = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
+
   // Load persistent read notifications
   useEffect(() => {
     const saved = localStorage.getItem('flowspace_read_notifs');
@@ -76,8 +101,19 @@ function Topbar() {
     <div className="d-flex justify-content-between align-items-center py-3 px-4 topbar-wrapper w-100"
       style={{ position: 'relative', zIndex: 200 }}>
 
-      {/* Left spacer (was Search) */}
-      <div style={{ width: '340px' }}></div>
+      {/* Left spacer (was Search) / Pomodoro */}
+      <div className="d-flex align-items-center gap-2" style={{ background: 'var(--surface-2)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-thin)' }}>
+        <i className="bi bi-clock-history text-danger"></i>
+        <span className="fw-bold fs-5" style={{ color: pomoTime < 60 ? 'var(--primary)' : 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
+          {formatPomo(pomoTime)}
+        </span>
+        <button className="btn btn-sm p-0 ms-2 text-secondary hover-scale" onClick={togglePomo}>
+          <i className={`bi ${pomoActive ? 'bi-pause-fill' : 'bi-play-fill'} fs-5`}></i>
+        </button>
+        <button className="btn btn-sm p-0 ms-1 text-secondary hover-scale" onClick={resetPomo}>
+          <i className="bi bi-arrow-counterclockwise fs-5"></i>
+        </button>
+      </div>
 
       {/* Right group */}
       <div className="d-flex align-items-center gap-3">

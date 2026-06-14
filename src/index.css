@@ -299,3 +299,35 @@ body, html, #root {
   box-shadow: 0 0 16px rgba(239,68,68,0.15) !important;
   background: rgba(15, 23, 42, 0.8) !important;
 }
+
+/* ═══════════════════════════════════════════════
+   LIGHT THEME OVERRIDES
+   ═══════════════════════════════════════════════ */
+body.light-theme {
+  --bg-deep:     #F8FAFC;
+  --bg-dark:     #F1F5F9;
+  --surface-1:   #FFFFFF;
+  --surface-2:   #F8FAFC;
+  --surface-3:   #E2E8F0;
+
+  --text-primary:   #0F172A;
+  --text-secondary: #475569;
+  --text-muted:     #64748B;
+
+  --border-thin:   rgba(0, 0, 0, 0.08);
+  --border-medium: rgba(0, 0, 0, 0.12);
+
+  --glass-bg:     rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .kanban-col {
+  background: rgba(0,0,0,0.015);
+}
+body.light-theme .kanban-col:hover {
+  background: rgba(0,0,0,0.03);
+}
+body.light-theme .kanban-col-todo       { background-color: #F1F5F9; }
+body.light-theme .kanban-col-inprogress { background-color: #FEF3C7; }
+body.light-theme .kanban-col-done       { background-color: #D1FAE5; }
+

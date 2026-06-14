@@ -8,6 +8,7 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ProjectProvider } from './context/ProjectContext.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 
 // Restore accent color + dark mode preference BEFORE React renders (avoids flash)
 const savedColor = localStorage.getItem('flowspace_color');
@@ -18,18 +19,20 @@ if (savedColor) {
   const b = parseInt(savedColor.slice(5, 7), 16);
   document.documentElement.style.setProperty('--primary-glow', `rgba(${r},${g},${b},0.4)`);
 }
-if (localStorage.getItem('flowspace_darkmode') === 'false') {
-  document.body.classList.add('light-mode');
+if (localStorage.getItem('flowspace_theme') === 'light') {
+  document.body.classList.add('light-theme');
 }
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <ProjectProvider>
-          <App />
-        </ProjectProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ProjectProvider>
+            <App />
+          </ProjectProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 )

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const saved = localStorage.getItem('flowspace_nav_collapsed');
@@ -132,10 +134,21 @@ function Sidebar() {
       <div style={{ flex: 1 }}>
         {renderNavItem('/', 'bi bi-house-door', 'Trang chủ')}
         {renderNavItem('/kanban', 'bi bi-kanban', 'Bảng Kanban')}
+        {renderNavItem('/calendar', 'bi bi-calendar-event', 'Lịch làm việc')}
       </div>
 
       {/* Bottom nav */}
       <div style={{ borderTop: '1px solid var(--border-thin)', paddingTop: '10px', paddingBottom: '14px' }}>
+        <button onClick={toggleTheme}
+          className="btn w-100 d-flex align-items-center"
+          style={{ ...navLinkStyle(false), padding: '11px 0', border: 'none', textAlign: 'left', cursor: 'pointer' }}
+          title={collapsed ? (theme === 'dark' ? 'Chế độ Sáng' : 'Chế độ Tối') : undefined}
+        >
+          <i className={theme === 'dark' ? 'bi bi-sun fs-5' : 'bi bi-moon fs-5'} style={{ minWidth: '22px', textAlign: 'center', flexShrink: 0 }}></i>
+          <span className="fw-medium ms-3" style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: collapsed ? '0px' : '160px', opacity: collapsed ? 0 : 1, transition: 'max-width 0.25s ease, opacity 0.18s ease' }}>
+            {theme === 'dark' ? 'Chế độ Sáng' : 'Chế độ Tối'}
+          </span>
+        </button>
         {renderNavItem('/setting', 'bi bi-gear', 'Cài đặt')}
         {renderNavItem('/user', 'bi bi-person-circle', 'Tài khoản')}
       </div>

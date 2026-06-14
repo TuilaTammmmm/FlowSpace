@@ -5,6 +5,7 @@ import ToastContainer from './components/ToastContainer';
 
 import Home from "./page/Home";
 import Kanbanboard from "./page/Kanbanboard";
+import CalendarView from "./page/CalendarView";
 import Setting from "./page/Setting";
 import User from "./page/User";
 
@@ -28,6 +29,7 @@ function App() {
           <Route path="/" element={<Home />} />
           {/* Gõ /kanban ăn vào Kanbanboard.jsx */}
           <Route path="/kanban" element={<Kanbanboard />} />
+          <Route path="/calendar" element={<CalendarView />} />
           <Route path="/user" element={<User />} />
           <Route path="/setting" element={<Setting />} />
         </Route>

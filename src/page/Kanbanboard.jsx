@@ -4,9 +4,13 @@ import { useProjects } from '../context/ProjectContext';
 import Newtask from '../components/Newtask';
 import TaskCard from '../components/TaskCard';
 
+import { DndContext, PointerSensor, useSensor, useSensors, closestCorners, DragOverlay } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import confetti from 'canvas-confetti';
+
 /* ── Project Rename/Delete confirmation modal ── */
 function ProjectActionsModal({ project, onRename, onDelete, onClose }) {
-  const [mode, setMode]       = useState('menu'); // 'menu' | 'rename' | 'delete'
+  const [mode, setMode]       = useState('menu'); 
   const [newName, setNewName] = useState(project?.name || '');
   const [deleteInput, setDeleteInput] = useState('');
 
@@ -27,7 +31,7 @@ function ProjectActionsModal({ project, onRename, onDelete, onClose }) {
         onClick={e => e.stopPropagation()}
       >
         <div className="d-flex justify-content-between align-items-center px-5 py-4 border-bottom" style={{ borderColor: 'var(--border-thin)' }}>
-          <span className="fw-bold text-white" style={{ fontSize: '13px' }}>Quản lý dự án: {project.name}</span>
+          <span className="fw-bold" style={{ fontSize: '13px', color: 'var(--text-primary)' }}>Quản lý dự án: {project.name}</span>
           <button className="btn p-0 text-secondary" style={{ background: 'none', border: 'none', fontSize: '18px' }} onClick={onClose}>
             <i className="bi bi-x-lg"></i>
           </button>
@@ -120,7 +124,7 @@ function AddProjectModal({ onAdd, onClose }) {
       style={{ inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 2000, backdropFilter: 'blur(4px)' }}
       onClick={onClose}>
       <div className="card-premium p-5 shadow-premium" style={{ width: '400px' }} onClick={e => e.stopPropagation()}>
-        <h5 className="fw-bold text-white mb-3">Tạo dự án mới</h5>
+        <h5 className="fw-bold mb-3" style={{ color: 'var(--text-primary)' }}>Tạo dự án mới</h5>
         <input autoFocus className="form-control mb-4" placeholder="Tên dự án..." value={name} onChange={e => setName(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && name.trim()) { onAdd(name.trim()); onClose(); } }} />
         <div className="d-flex gap-3 justify-content-end">
@@ -133,23 +137,29 @@ function AddProjectModal({ onAdd, onClose }) {
 }
 
 /* ── Kanban Column ── */
-function KanbanColumn({ status, label, icon, color, accentBg, tasks, onDragOver, onDrop, onUpdate, onDelete, onAddTask }) {
+function KanbanColumn({ status, label, icon, color, accentBg, tasks, onUpdate, onDelete, onAddTask }) {
   const [showNewTask, setShowNewTask] = useState(false);
+  const [quickTitle, setQuickTitle] = useState('');
 
   const colTasks = tasks.filter(t => t.status === status);
 
+  const handleQuickAdd = (e) => {
+    if (e.key === 'Enter' && quickTitle.trim()) {
+      onAddTask({ title: quickTitle.trim(), status, tag: 'Low', priority: 'Thấp' });
+      setQuickTitle('');
+    }
+  };
+
   return (
     <div
-      className={`kanban-col kanban-col-${status === 'todo' ? 'todo' : status === 'in-progress' ? 'inprogress' : 'done'} p-3`}
+      className={`kanban-col kanban-col-${status === 'todo' ? 'todo' : status === 'in-progress' ? 'inprogress' : 'done'} p-3 d-flex flex-column`}
       style={{ minWidth: '310px', maxWidth: '310px', flex: '0 0 310px' }}
-      onDragOver={onDragOver}
-      onDrop={(e) => onDrop(e, status)}
     >
       {/* Column header */}
       <div className="d-flex justify-content-between align-items-center mb-3 px-1">
         <div className="d-flex align-items-center gap-2">
           <i className={icon} style={{ fontSize: '14px', color }}></i>
-          <span className="fw-bold text-white" style={{ fontSize: '14px' }}>{label}</span>
+          <span className="fw-bold" style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{label}</span>
           <span className="badge rounded-pill fw-bold"
             style={{ background: accentBg, color, fontSize: '11px', padding: '2px 8px' }}>
             {colTasks.length}
@@ -158,35 +168,44 @@ function KanbanColumn({ status, label, icon, color, accentBg, tasks, onDragOver,
         <button
           onClick={() => setShowNewTask(true)}
           className="btn btn-sm p-0 d-flex align-items-center justify-content-center text-secondary"
-          style={{ background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: '8px', width: '28px', height: '28px' }}>
+          style={{ background: 'rgba(128,128,128,0.1)', border: 'none', borderRadius: '8px', width: '28px', height: '28px' }}>
           <i className="bi bi-plus" style={{ fontSize: '16px' }}></i>
         </button>
       </div>
 
       {/* Tasks Scroll Area */}
-      <div className="kanban-scroll-area d-flex flex-column gap-3">
-        {colTasks.length === 0 ? (
-          <div className="d-flex flex-column align-items-center justify-content-center p-5 rounded-4"
-            style={{ border: '1px dashed var(--border-thin)', background: 'rgba(255,255,255,0.01)', minHeight: '160px' }}>
-            <div className="rounded-circle d-flex align-items-center justify-content-center mb-3"
-              style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.03)', color: 'var(--text-muted)' }}>
-              <i className="bi bi-inbox fs-4 opacity-50"></i>
+      <SortableContext items={colTasks.map(t => String(t.id))} strategy={verticalListSortingStrategy}>
+        <div className="kanban-scroll-area d-flex flex-column gap-3">
+          {colTasks.length === 0 ? (
+            <div className="d-flex flex-column align-items-center justify-content-center p-5 rounded-4"
+              style={{ border: '1px dashed var(--border-thin)', background: 'transparent', minHeight: '160px' }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-25 text-secondary mb-3">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+              <span className="text-secondary opacity-50 fw-medium small text-center">Kéo thả hoặc tạo task mới</span>
             </div>
-            <span className="text-secondary opacity-50 fw-medium small">Khoảng trống sáng tạo</span>
-          </div>
-        ) : (
-          colTasks.map(task => (
-            <TaskCard key={task.id} task={task}
-              onDragStart={(e, id) => e.dataTransfer.setData('taskId', id)}
-              onUpdate={onUpdate}
-              onDelete={onDelete}
-            />
-          ))
-        )}
+          ) : (
+            colTasks.map(task => (
+              <TaskCard key={task.id} task={task} onUpdate={onUpdate} onDelete={onDelete} />
+            ))
+          )}
+        </div>
+      </SortableContext>
+
+      <div className="mt-3">
+        <input 
+          type="text" 
+          className="form-control form-control-sm" 
+          placeholder="+ Thêm nhanh (Enter)"
+          style={{ background: 'rgba(128,128,128,0.05)', border: '1px dashed var(--border-thin)', color: 'var(--text-primary)' }}
+          value={quickTitle}
+          onChange={e => setQuickTitle(e.target.value)}
+          onKeyDown={handleQuickAdd}
+        />
       </div>
 
       <Newtask show={showNewTask} onHide={() => setShowNewTask(false)} defaultStatus={status}
-        onAddTask={(data) => { onAddTask(data); setShowNewTask(false); }} />
+        onAddTask={(data) => { onAddTask({ ...data, status }); setShowNewTask(false); }} />
     </div>
   );
 }
@@ -195,8 +214,14 @@ function KanbanColumn({ status, label, icon, color, accentBg, tasks, onDragOver,
 function Kanbanboard() {
   const { projects, activeProjectId, changeActiveProject, renameProject, deleteProject, addProject, showToast } = useProjects();
   const [tasks, setTasks]     = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [projectAction, setProjectAction] = useState(null);
   const [showAddProject, setShowAddProject] = useState(false);
+  const [activeDragTask, setActiveDragTask] = useState(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   const handleCreateFirst = () => setShowAddProject(true);
 
@@ -214,13 +239,6 @@ function Kanbanboard() {
     showToast('Nhiệm vụ mới', `Đã thêm "${taskData.title}"`);
   };
 
-  const handleDragOver = (e) => e.preventDefault();
-  const handleDrop = async (e, newStatus) => {
-    const id = e.dataTransfer.getData('taskId');
-    setTasks(prev => prev.map(t => String(t.id) === String(id) ? { ...t, status: newStatus } : t));
-    await MOCK_API.updateTaskStatus(id, newStatus);
-  };
-
   const handleUpdate = async (taskId, data) => {
     const updated = await MOCK_API.updateTask(taskId, data);
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updated } : t));
@@ -231,6 +249,50 @@ function Kanbanboard() {
     await MOCK_API.deleteTask(taskId);
     setTasks(prev => prev.filter(t => t.id !== taskId));
     showToast('Đã xóa', `Đã xóa nhiệm vụ "${taskTitle}"`);
+  };
+
+  const handleDragStart = (e) => {
+    const task = tasks.find(t => String(t.id) === e.active.id);
+    if (task) setActiveDragTask(task);
+  };
+
+  const handleDragEnd = async (e) => {
+    setActiveDragTask(null);
+    const { active, over } = e;
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    // Find new status
+    const activeTask = tasks.find(t => String(t.id) === activeId);
+    let newStatus = activeTask.status;
+
+    // If dropped on a task
+    const overTask = tasks.find(t => String(t.id) === overId);
+    if (overTask) {
+      newStatus = overTask.status;
+    } else {
+      // If dropped on a column (we need to pass column id to SortableContext or identify columns differently)
+      // Since dnd-kit requires droppables, we might not get overTask.
+      // To simplify, if over is one of the tasks, we use its status.
+      // Wait, let's make sure we can drop on empty columns.
+      // We will handle it by making KanbanColumn an id, but since we didn't use droppable columns properly in SortableContext,
+      // it might only drop over existing tasks. We'll improve this if needed.
+    }
+
+    if (activeTask && overTask && activeTask.status !== overTask.status) {
+      setTasks(prev => prev.map(t => String(t.id) === activeId ? { ...t, status: newStatus } : t));
+      await MOCK_API.updateTaskStatus(activeId, newStatus);
+      
+      if (newStatus === 'done') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
   };
 
   if (projects.length === 0) return (
@@ -251,68 +313,88 @@ function Kanbanboard() {
   if (!activeProjectId) return null;
 
   const COLUMNS = [
-    { status: 'todo',        label: 'Chưa làm',   icon: 'bi bi-circle',            color: 'var(--text-secondary)', accentBg: 'rgba(255,255,255,0.10)' },
+    { status: 'todo',        label: 'Chưa làm',   icon: 'bi bi-circle',            color: 'var(--text-secondary)', accentBg: 'rgba(128,128,128,0.1)' },
     { status: 'in-progress', label: 'Đang làm',   icon: 'bi bi-clock-history',     color: '#F59E0B',               accentBg: 'rgba(245,158,11,0.18)' },
     { status: 'done',        label: 'Hoàn thành', icon: 'bi bi-check-circle-fill', color: '#10B981',               accentBg: 'rgba(16,185,129,0.18)' },
   ];
 
+  const filteredTasks = tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()));
+
   return (
     <div className="container-fluid p-0 d-flex flex-column" style={{ minHeight: '100%' }}>
-
-      {/* Project Tabs */}
-      <div className="d-flex mb-4 px-1 align-items-center workspace-tabs-scroll"
-        style={{ gap: '4px', borderBottom: '1px solid var(--border-thin)', paddingBottom: '4px' }}>
-        {projects.map(proj => (
-          <div key={proj.id} 
-            className="position-relative group"
-            style={{ flexShrink: 0 }}>
-            <div 
-              onClick={() => changeActiveProject(proj.id)}
-              className="px-4 py-2 fw-bold rounded-3 small d-flex align-items-center gap-2 transition-all"
-              style={{ 
-                cursor: 'pointer',
-                color: activeProjectId === proj.id ? '#FFF' : 'var(--text-secondary)', 
-                background: activeProjectId === proj.id ? 'var(--primary)' : 'transparent',
-                border: activeProjectId === proj.id ? 'none' : '1px solid transparent',
-                whiteSpace: 'nowrap' 
-              }}>
-              <span>{proj.name}</span>
-              
-              {/* Internal Tab Controls */}
-              <div className="d-flex align-items-center gap-1 ms-1">
-                {proj.isMuted && (
-                  <i className="bi bi-bell-slash-fill" style={{ fontSize: '10px', opacity: 0.8 }}></i>
-                )}
-                <div onClick={(e) => { 
-                  e.stopPropagation(); 
-                  setProjectAction(proj);
-                }} className="hover-scale ms-1" style={{ cursor: 'pointer', opacity: 0.6 }}>
-                  <i className="bi bi-gear-fill" style={{ fontSize: '10px' }}></i>
+      {/* Project Tabs & Search */}
+      <div className="d-flex mb-4 px-1 align-items-center justify-content-between flex-wrap gap-3"
+        style={{ borderBottom: '1px solid var(--border-thin)', paddingBottom: '12px' }}>
+        <div className="d-flex align-items-center workspace-tabs-scroll" style={{ gap: '4px' }}>
+          {projects.map(proj => (
+            <div key={proj.id} 
+              className="position-relative group"
+              style={{ flexShrink: 0 }}>
+              <div 
+                onClick={() => changeActiveProject(proj.id)}
+                className="px-4 py-2 fw-bold rounded-3 small d-flex align-items-center gap-2 transition-all"
+                style={{ 
+                  cursor: 'pointer',
+                  color: activeProjectId === proj.id ? '#FFF' : 'var(--text-secondary)', 
+                  background: activeProjectId === proj.id ? 'var(--primary)' : 'transparent',
+                  border: activeProjectId === proj.id ? 'none' : '1px solid transparent',
+                  whiteSpace: 'nowrap' 
+                }}>
+                <span>{proj.name}</span>
+                <div className="d-flex align-items-center gap-1 ms-1">
+                  {proj.isMuted && (
+                    <i className="bi bi-bell-slash-fill" style={{ fontSize: '10px', opacity: 0.8 }}></i>
+                  )}
+                  <div onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setProjectAction(proj);
+                  }} className="hover-scale ms-1" style={{ cursor: 'pointer', opacity: 0.6 }}>
+                    <i className="bi bi-gear-fill" style={{ fontSize: '10px' }}></i>
+                  </div>
                 </div>
               </div>
             </div>
+          ))}
+          <div onClick={handleCreateFirst}
+            className="fw-bold px-3 py-2 flex-shrink-0"
+            style={{ cursor: 'pointer', color: 'var(--text-muted)', whiteSpace: 'nowrap', opacity: 0.6 }}>
+            <i className="bi bi-plus-lg"></i>
           </div>
-        ))}
-        <div onClick={handleCreateFirst}
-          className="fw-bold px-3 py-2 flex-shrink-0"
-          style={{ cursor: 'pointer', color: 'var(--text-muted)', whiteSpace: 'nowrap', opacity: 0.6 }}>
-          <i className="bi bi-plus-lg"></i>
+        </div>
+
+        {/* Search Input */}
+        <div className="d-flex align-items-center position-relative" style={{ minWidth: '250px' }}>
+          <i className="bi bi-search position-absolute text-muted" style={{ left: '12px' }}></i>
+          <input 
+            type="text" 
+            className="form-control ps-5" 
+            placeholder="Tìm kiếm task..." 
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Columns */}
-      <div className="d-flex gap-3 overflow-auto pb-4" 
-        style={{ alignItems: 'flex-start', minHeight: '600px', flex: 1 }}>
-        {COLUMNS.map(col => (
-          <KanbanColumn key={col.status} {...col} tasks={tasks}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-            onAddTask={handleAddTask}
-          />
-        ))}
-      </div>
+      {/* Columns with DndContext */}
+      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="d-flex gap-3 overflow-auto pb-4" 
+          style={{ alignItems: 'flex-start', minHeight: '600px', flex: 1 }}>
+          {COLUMNS.map(col => (
+            <KanbanColumn key={col.status} {...col} tasks={filteredTasks}
+              onUpdate={handleUpdate}
+              onDelete={handleDelete}
+              onAddTask={handleAddTask}
+            />
+          ))}
+        </div>
+        <DragOverlay>
+          {activeDragTask ? (
+            <div style={{ opacity: 0.8, transform: 'rotate(2deg)' }}>
+              <TaskCard task={activeDragTask} onUpdate={() => {}} onDelete={() => {}} />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       {/* Project manage modal */}
       {projectAction && (

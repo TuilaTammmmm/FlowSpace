@@ -12,8 +12,8 @@ function SocialLinkRow({ icon, platform, value, editMode, onSave }) {
     <div className="d-flex align-items-center gap-3 mb-3">
       <button
         onClick={() => val && window.open(val, '_blank')}
-        className="btn rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0"
-        style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-thin)', opacity: val ? 0.85 : 0.4 }}
+        className="btn rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+        style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-thin)', opacity: val ? 0.85 : 0.4, color: 'var(--text-primary)' }}
         onMouseEnter={e => val && (e.currentTarget.style.opacity = '1')}
         onMouseLeave={e => e.currentTarget.style.opacity = val ? '0.85' : '0.4'}
         title={val || platform}
@@ -55,7 +55,7 @@ function InlineField({ label, value, type = 'text', textarea = false, editMode, 
     width: '100%',
     display: 'block',
     background: 'rgba(255,255,255,0.07)',
-    color: '#FFFFFF',
+    color: 'var(--text-primary)',
     border: 'none',
     borderBottom: '2px solid var(--primary)',
     borderRadius: '4px',
@@ -250,13 +250,13 @@ function User() {
                   <div className="col-6">
                     <div className="text-center p-4 rounded-4" style={{ background: 'rgba(255, 61, 61, 0.08)', border: '1px solid rgba(255, 61, 61, 0.2)' }}>
                       <h1 className="fw-bold mb-1" style={{ color: '#FF4D4D' }}>{projects.length}</h1>
-                      <div className="fw-bold" style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255, 255, 255, 0.5)' }}>Tổng dự án</div>
+                      <div className="fw-bold" style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)' }}>Tổng dự án</div>
                     </div>
                   </div>
                   <div className="col-6">
                     <div className="text-center p-4 rounded-4" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
                       <h1 className="fw-bold mb-1" style={{ color: '#10B981' }}>{doneCount}</h1>
-                      <div className="fw-bold" style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255, 255, 255, 0.5)' }}>Task xong</div>
+                      <div className="fw-bold" style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)' }}>Task xong</div>
                     </div>
                   </div>
                 </div>

@@ -12,7 +12,7 @@ function AddProjectModal({ onAdd, onClose }) {
       style={{ inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 2000, backdropFilter: 'blur(4px)' }}
       onClick={onClose}>
       <div className="card-premium p-5 shadow-premium" style={{ width: '400px' }} onClick={e => e.stopPropagation()}>
-        <h5 className="fw-bold text-white mb-3">Tạo dự án mới</h5>
+        <h5 className="fw-bold mb-3" style={{ color: 'var(--text-primary)' }}>Tạo dự án mới</h5>
         <input autoFocus className="form-control mb-4" placeholder="Tên dự án..." value={name} onChange={e => setName(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && name.trim()) { onAdd(name.trim()); onClose(); } }} />
         <div className="d-flex gap-3 justify-content-end">
@@ -47,7 +47,7 @@ function ProjectActionsModal({ project, onRename, onDelete, onClose }) {
         onClick={e => e.stopPropagation()}
       >
         <div className="d-flex justify-content-between align-items-center px-5 py-4 border-bottom" style={{ borderColor: 'var(--border-thin)' }}>
-          <span className="fw-bold text-white" style={{ fontSize: '13px' }}>Quản lý dự án: {project.name}</span>
+          <span className="fw-bold" style={{ fontSize: '13px', color: 'var(--text-primary)' }}>Quản lý dự án: {project.name}</span>
           <button className="btn p-0 text-secondary" style={{ background: 'none', border: 'none', fontSize: '18px' }} onClick={onClose}>
             <i className="bi bi-x-lg"></i>
           </button>
@@ -100,7 +100,7 @@ function ProjectActionsModal({ project, onRename, onDelete, onClose }) {
             <div>
               <div className="p-3 rounded-3 mb-4" style={{ background: 'rgba(255,61,61,0.06)', border: '1px solid rgba(255,61,61,0.2)' }}>
                 <p className="text-secondary small mb-2">
-                  Hành động này sẽ xóa vĩnh viễn dự án và <strong className="text-white">tất cả task</strong> bên trong. Không thể hoàn tác!
+                  Hành động này sẽ xóa vĩnh viễn dự án và <strong style={{ color: 'var(--text-primary)' }}>tất cả task</strong> bên trong. Không thể hoàn tác!
                 </p>
                 <p className="mb-0 small" style={{ color: '#ef4444', fontWeight: 600 }}>
                   Nhập: <code style={{ background: 'rgba(255,61,61,0.15)', padding: '2px 6px', borderRadius: '4px', color: '#ef4444' }}>{expectedDelete}</code> để xác nhận
@@ -296,7 +296,7 @@ function Home() {
     <div className="container-fluid p-0 d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '70vh' }}>
       <div className="text-center p-5 rounded-5 shadow-premium" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-thin)', maxWidth: '400px' }}>
         <i className="bi bi-folder-plus display-1 text-primary mb-4 d-block opacity-25"></i>
-        <h4 className="fw-bold text-white mb-3">Chưa có dự án nào</h4>
+        <h4 className="fw-bold mb-3" style={{ color: 'var(--text-primary)' }}>Chưa có dự án nào</h4>
         <p className="text-secondary small mb-5">Khởi tạo không gian làm việc đầu tiên của bạn để bắt đầu quản lý nhiệm vụ hiệu quả hơn.</p>
         <button onClick={handleAddProject} className="btn btn-primary-red px-5 py-3 fw-bold rounded-3 shadow-lg w-100">
            Tạo dự án đầu tiên ngay
@@ -392,7 +392,7 @@ function Home() {
           <div className="card-premium h-100 shadow-premium">
             <div className="d-flex justify-content-between align-items-start mb-4">
               <div>
-                <h5 className="fw-bold text-white mb-0">Hiệu suất hoàn thành</h5>
+                <h5 className="fw-bold mb-0" style={{ color: 'var(--text-primary)' }}>Hiệu suất hoàn thành</h5>
                 <p className="text-secondary small mb-0 opacity-75">
                   {activeProjectId ? `Dự án: ${projects.find(p => p.id === activeProjectId)?.name}` : 'Chọn dự án để xem'} • Tuần {viewWeekNum}{viewWeekNum === currentWeekNum ? ' (hiện tại)' : ''}
                 </p>
@@ -406,7 +406,7 @@ function Home() {
                     style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.05)', opacity: canGoPrev ? 1 : 0.3 }}>
                     <i className="bi bi-chevron-left"></i>
                   </button>
-                  <span className="fw-bold small text-white" style={{ minWidth: '60px', textAlign: 'center', fontSize: '12px' }}>
+                  <span className="fw-bold small" style={{ minWidth: '60px', textAlign: 'center', fontSize: '12px', color: 'var(--text-primary)' }}>
                     Tuần {viewWeekNum}
                   </span>
                   <button 

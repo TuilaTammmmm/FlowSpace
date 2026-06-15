@@ -207,48 +207,47 @@ function Home() {
 
   // Load stats history for the chart
   useEffect(() => {
-    if (!user) return;
+    if (!user || !activeProjectId) {
+      setChartData([]);
+      return;
+    }
 
     const weekData = [];
     const weekdays = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
+    
+    // We compute chart data from the current tasks for a simulated burn-up chart
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(viewMonday);
+      d.setDate(viewMonday.getDate() + i);
+      const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const label = `${weekdays[i]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-    const buildChart = (raw) => {
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(viewMonday);
-        d.setDate(viewMonday.getDate() + i);
-        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const label = `${weekdays[i]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const endOfDay = new Date(d);
+      endOfDay.setHours(23, 59, 59, 999);
 
-        const existing = (raw || []).find(s => s.date === iso);
-        weekData.push({
-          name: label,
-          fullDate: iso,
-          total: existing ? existing.total : 0,
-          done: existing ? existing.done : 0,
-          pending: existing ? existing.active : 0,
-          isFuture: d > new Date()
-        });
-      }
-      setChartData(weekData);
-    };
+      // Tasks created on or before this day
+      const tasksUpToDay = tasks.filter(t => new Date(t.createdAt || t.created_at) <= endOfDay);
+      
+      const total = tasksUpToDay.length;
+      // Approximate 'done' status (using current status)
+      const done = tasksUpToDay.filter(t => t.status === 'done').length;
+      const pending = total - done;
 
-    const loadStats = async () => {
-      try {
-        // Only fetch if we have an active project
-        if (!activeProjectId) {
-          buildChart([]);
-          return;
-        }
-        const history = await MOCK_API.getDailyStats(user.id, activeProjectId);
-        buildChart(history || []);
-      } catch (err) {
-        console.error("Failed to load stats:", err);
-        buildChart([]);
-      }
-    };
+      // If the day is in the future, we can optionally zero it out or keep it flat
+      const isFuture = d > new Date();
 
-    loadStats();
-  }, [user, activeProjectId, weekOffset, viewMonday.getTime()]); 
+      weekData.push({
+        name: label,
+        fullDate: iso,
+        total: isFuture ? 0 : total,
+        done: isFuture ? 0 : done,
+        pending: isFuture ? 0 : pending,
+        isFuture: isFuture
+      });
+    }
+
+    setChartData(weekData);
+  }, [user, activeProjectId, weekOffset, viewMonday.getTime(), tasks]); 
 
   // Load current project tasks for the ring/stats
   useEffect(() => {

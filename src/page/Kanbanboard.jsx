@@ -4,7 +4,7 @@ import { useProjects } from '../context/ProjectContext';
 import Newtask from '../components/Newtask';
 import TaskCard from '../components/TaskCard';
 
-import { DndContext, PointerSensor, useSensor, useSensors, closestCorners, DragOverlay } from '@dnd-kit/core';
+import { DndContext, PointerSensor, useSensor, useSensors, closestCorners, DragOverlay, useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import confetti from 'canvas-confetti';
 
@@ -141,6 +141,8 @@ function KanbanColumn({ status, label, icon, color, accentBg, tasks, onUpdate, o
   const [showNewTask, setShowNewTask] = useState(false);
   const [quickTitle, setQuickTitle] = useState('');
 
+  const { setNodeRef } = useDroppable({ id: status });
+
   const colTasks = tasks.filter(t => t.status === status);
 
   const handleQuickAdd = (e) => {
@@ -152,6 +154,7 @@ function KanbanColumn({ status, label, icon, color, accentBg, tasks, onUpdate, o
 
   return (
     <div
+      ref={setNodeRef}
       className={`kanban-col kanban-col-${status === 'todo' ? 'todo' : status === 'in-progress' ? 'inprogress' : 'done'} p-3 d-flex flex-column`}
       style={{ minWidth: '310px', maxWidth: '310px', flex: '0 0 310px' }}
     >
@@ -272,16 +275,12 @@ function Kanbanboard() {
     const overTask = tasks.find(t => String(t.id) === overId);
     if (overTask) {
       newStatus = overTask.status;
-    } else {
-      // If dropped on a column (we need to pass column id to SortableContext or identify columns differently)
-      // Since dnd-kit requires droppables, we might not get overTask.
-      // To simplify, if over is one of the tasks, we use its status.
-      // Wait, let's make sure we can drop on empty columns.
-      // We will handle it by making KanbanColumn an id, but since we didn't use droppable columns properly in SortableContext,
-      // it might only drop over existing tasks. We'll improve this if needed.
+    } else if (['todo', 'in-progress', 'done'].includes(String(overId))) {
+      // Dropped on an empty column or directly on the column background
+      newStatus = String(overId);
     }
 
-    if (activeTask && overTask && activeTask.status !== overTask.status) {
+    if (activeTask && activeTask.status !== newStatus) {
       setTasks(prev => prev.map(t => String(t.id) === activeId ? { ...t, status: newStatus } : t));
       await MOCK_API.updateTaskStatus(activeId, newStatus);
       

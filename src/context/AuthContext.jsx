@@ -30,10 +30,29 @@ export const AuthProvider = ({ children }) => {
                 try {
                     if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                         if (session?.user) {
-                            const { data: dbUser } = await supabase.from('users').select('*').eq('email', session.user.email).single();
+                            const { data: dbUser } = await supabase.from('users').select('*').eq('email', session.user.email).maybeSingle();
+                            
                             if (dbUser) {
                                 setUser(dbUser);
                                 localStorage.setItem('flowspace_user', JSON.stringify(dbUser));
+                            } else {
+                                // For new Google Login users, create their profile in the users table
+                                const newDbUser = {
+                                    id: session.user.id,
+                                    email: session.user.email,
+                                    name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+                                    avatar_url: session.user.user_metadata?.avatar_url || '',
+                                    bio: '',
+                                    department: '',
+                                    password: ''
+                                };
+                                const { data: createdDbUser, error: insertError } = await supabase.from('users').upsert(newDbUser).select().single();
+                                if (createdDbUser) {
+                                    setUser(createdDbUser);
+                                    localStorage.setItem('flowspace_user', JSON.stringify(createdDbUser));
+                                } else if (insertError) {
+                                    console.error('Failed to create user in users table:', insertError);
+                                }
                             }
                         }
                     }
